@@ -141,6 +141,61 @@
                   },
                   "children": []
                 }
+              },
+              {
+                "ƒ.Node": {
+                  "name": "border",
+                  "components": {
+                    "ComponentMesh": [
+                      {
+                        "ƒ.ComponentMesh": {
+                          "idMesh": "MeshQuad|2021-10-14T23:00:47.649Z|48603",
+                          "pivot": {
+                            "translation": "[0, 0, 0]",
+                            "rotation": "[0, 0, 0]",
+                            "scaling": "[1, 1, 1]"
+                          },
+                          "Component": {
+                            "active": true
+                          }
+                        }
+                      }
+                    ],
+                    "ComponentMaterial": [
+                      {
+                        "ƒ.ComponentMaterial": {
+                          "sortForAlpha": false,
+                          "clrPrimary": "[1, 1, 1, 1]",
+                          "clrSecondary": "[1, 1, 1, 1]",
+                          "pivot": {
+                            "translation": "[0, 0]",
+                            "rotation": 0,
+                            "scaling": "[1, 1]"
+                          },
+                          "Component": {
+                            "active": true
+                          },
+                          "idMaterial": "Material|2021-10-14T23:00:09.750Z|48785"
+                        }
+                      }
+                    ],
+                    "ComponentTransform": [
+                      {
+                        "ƒ.ComponentTransform": {
+                          "local": {
+                            "translation": "[0, 0, -0.07000000029802322]",
+                            "rotation": "[0, 0, 0]",
+                            "scaling": "[42, 32, 1]"
+                          },
+                          "Component": {
+                            "active": true
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "children": []
+                }
               }
             ]
           }
@@ -646,6 +701,25 @@
       "idResource": "MeshPyramid|2021-10-14T22:46:53.278Z|15476",
       "name": "mesh_hat",
       "type": "MeshPyramid"
+    }
+  },
+  "Material|2021-10-14T23:00:09.750Z|48785": {
+    "ƒ.Material": {
+      "name": "mat_border",
+      "idResource": "Material|2021-10-14T23:00:09.750Z|48785",
+      "shader": "ShaderFlat",
+      "coat": {
+        "ƒ.CoatColored": {
+          "color": "[1, 0, 0, 1]"
+        }
+      }
+    }
+  },
+  "MeshQuad|2021-10-14T23:00:47.649Z|48603": {
+    "ƒ.MeshQuad": {
+      "idResource": "MeshQuad|2021-10-14T23:00:47.649Z|48603",
+      "name": "mesh_border",
+      "type": "MeshQuad"
     }
   }
 }
