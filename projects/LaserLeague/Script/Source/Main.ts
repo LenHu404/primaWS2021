@@ -10,10 +10,18 @@ namespace Script {
 
     ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
     // ƒ.Loop.start();  // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
+
+    let graph: ƒ.Node = viewport.getBranch();
+    console.log("graph");
+    console.log(graph);
+
+    console.log(graph.getChildrenByName("Agents"));
+
   }
 
   function update(_event: Event): void {
     // ƒ.Physics.world.simulate();  // if physics is included and used
+    
     viewport.draw();
     ƒ.AudioManager.default.update();
   }

@@ -45,6 +45,10 @@ var Script;
         viewport = _event.detail;
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
         // ƒ.Loop.start();  // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
+        let graph = viewport.getBranch();
+        console.log("graph");
+        console.log(graph);
+        console.log(graph.getChildrenByName("Agents"));
     }
     function update(_event) {
         // ƒ.Physics.world.simulate();  // if physics is included and used
