@@ -41,17 +41,21 @@ var Script;
     ƒ.Debug.info("Main Program Template running!");
     let viewport;
     document.addEventListener("interactiveViewportStarted", start);
+    let transform;
     function start(_event) {
         viewport = _event.detail;
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
-        // ƒ.Loop.start();  // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
+        ƒ.Loop.start(); // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
         let graph = viewport.getBranch();
         console.log("graph");
         console.log(graph);
-        console.log(graph.getChildrenByName("Agents"));
+        // console.log(graph.getChildrenByName("Agents"));
+        let laser = graph.getChildrenByName("Laserformations")[0].getChildrenByName("Laserblock1")[0].getChildrenByName("center")[0];
+        transform = laser.getComponent(ƒ.ComponentTransform).mtxLocal;
     }
     function update(_event) {
         // ƒ.Physics.world.simulate();  // if physics is included and used
+        transform.rotateZ(3);
         viewport.draw();
         ƒ.AudioManager.default.update();
     }
