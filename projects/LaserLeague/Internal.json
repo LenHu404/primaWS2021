@@ -72,7 +72,7 @@
       "shader": "ShaderFlat",
       "coat": {
         "ƒ.CoatColored": {
-          "color": "[0.8823529411764706, 0.03529411764705882, 0.03529411764705882, 1]"
+          "color": "[1, 0, 0, 1]"
         }
       }
     }
@@ -284,7 +284,7 @@
                       {
                         "ƒ.ComponentTransform": {
                           "local": {
-                            "translation": "[9, 6, 0]",
+                            "translation": "[7, 6, 0]",
                             "rotation": "[0, 0, 0]",
                             "scaling": "[1, 1, 1]"
                           },
@@ -720,6 +720,18 @@
       ],
       "idResource": "Graph|2021-10-14T13:02:42.894Z|75025",
       "type": "Graph"
+    }
+  },
+  "Material|2021-10-15T22:32:53.298Z|54138": {
+    "ƒ.Material": {
+      "name": "mat_LaserTexture",
+      "idResource": "Material|2021-10-15T22:32:53.298Z|54138",
+      "shader": "ShaderTexture",
+      "coat": {
+        "ƒ.CoatTextured": {
+          "color": "[1, 1, 1, 1]"
+        }
+      }
     }
   }
 }

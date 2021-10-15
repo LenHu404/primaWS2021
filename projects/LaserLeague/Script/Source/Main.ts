@@ -6,6 +6,7 @@ namespace Script {
   document.addEventListener("interactiveViewportStarted", <EventListener>start);
 
   let transform: ƒ.Matrix4x4;
+  let transformAgent: ƒ.Matrix4x4;
 
   function start(_event: CustomEvent): void {
     viewport = _event.detail;
@@ -20,13 +21,22 @@ namespace Script {
     // console.log(graph.getChildrenByName("Agents"));
 
     let laser: ƒ.Node = graph.getChildrenByName("Laserformations")[0].getChildrenByName("Laserblock1")[0].getChildrenByName("center")[0];
+
+    let agent1: ƒ.Node = graph.getChildrenByName("Agents")[0].getChildrenByName("agent1")[0].getChildrenByName("hat")[0];
+    
     transform = laser.getComponent(ƒ.ComponentTransform).mtxLocal;
+
+    transformAgent = agent1.getComponent(ƒ.ComponentTransform).mtxLocal;
 
   }
 
   function update(_event: Event): void {
     // ƒ.Physics.world.simulate();  // if physics is included and used
     transform.rotateZ(3);
+
+    transformAgent.rotateZ(3);
+
+    
     viewport.draw();
     ƒ.AudioManager.default.update();
   }
