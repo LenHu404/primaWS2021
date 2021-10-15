@@ -77,6 +77,44 @@
       }
     }
   },
+  "MeshQuad|2021-10-14T23:00:47.649Z|48603": {
+    "ƒ.MeshQuad": {
+      "idResource": "MeshQuad|2021-10-14T23:00:47.649Z|48603",
+      "name": "mesh_border",
+      "type": "MeshQuad"
+    }
+  },
+  "Material|2021-10-14T23:00:09.750Z|48785": {
+    "ƒ.Material": {
+      "name": "mat_border",
+      "idResource": "Material|2021-10-14T23:00:09.750Z|48785",
+      "shader": "ShaderFlat",
+      "coat": {
+        "ƒ.CoatColored": {
+          "color": "[0.34901960784313724, 0.2549019607843137, 0.050980392156862744, 1]"
+        }
+      }
+    }
+  },
+  "MeshPyramid|2021-10-14T22:46:53.278Z|15476": {
+    "ƒ.MeshPyramid": {
+      "idResource": "MeshPyramid|2021-10-14T22:46:53.278Z|15476",
+      "name": "mesh_hat",
+      "type": "MeshPyramid"
+    }
+  },
+  "Material|2021-10-14T22:46:27.176Z|71936": {
+    "ƒ.Material": {
+      "name": "mat_hat",
+      "idResource": "Material|2021-10-14T22:46:27.176Z|71936",
+      "shader": "ShaderFlat",
+      "coat": {
+        "ƒ.CoatColored": {
+          "color": "[0.21568627450980393, 1, 0, 1]"
+        }
+      }
+    }
+  },
   "Graph|2021-10-14T13:02:42.894Z|75025": {
     "ƒ.Graph": {
       "name": "root",
@@ -98,7 +136,7 @@
                           "pivot": {
                             "translation": "[0, 0, 0]",
                             "rotation": "[0, 0, 0]",
-                            "scaling": "[1, 1, 1]"
+                            "scaling": "[40, 30, 1]"
                           },
                           "Component": {
                             "active": true
@@ -130,7 +168,7 @@
                           "local": {
                             "translation": "[0, 0, 0]",
                             "rotation": "[0, 0, 0]",
-                            "scaling": "[40, 30, 1]"
+                            "scaling": "[1, 1, 1]"
                           },
                           "Component": {
                             "active": true
@@ -682,44 +720,6 @@
       ],
       "idResource": "Graph|2021-10-14T13:02:42.894Z|75025",
       "type": "Graph"
-    }
-  },
-  "Material|2021-10-14T22:46:27.176Z|71936": {
-    "ƒ.Material": {
-      "name": "mat_hat",
-      "idResource": "Material|2021-10-14T22:46:27.176Z|71936",
-      "shader": "ShaderFlat",
-      "coat": {
-        "ƒ.CoatColored": {
-          "color": "[0.21568627450980393, 1, 0, 1]"
-        }
-      }
-    }
-  },
-  "MeshPyramid|2021-10-14T22:46:53.278Z|15476": {
-    "ƒ.MeshPyramid": {
-      "idResource": "MeshPyramid|2021-10-14T22:46:53.278Z|15476",
-      "name": "mesh_hat",
-      "type": "MeshPyramid"
-    }
-  },
-  "Material|2021-10-14T23:00:09.750Z|48785": {
-    "ƒ.Material": {
-      "name": "mat_border",
-      "idResource": "Material|2021-10-14T23:00:09.750Z|48785",
-      "shader": "ShaderFlat",
-      "coat": {
-        "ƒ.CoatColored": {
-          "color": "[1, 0, 0, 1]"
-        }
-      }
-    }
-  },
-  "MeshQuad|2021-10-14T23:00:47.649Z|48603": {
-    "ƒ.MeshQuad": {
-      "idResource": "MeshQuad|2021-10-14T23:00:47.649Z|48603",
-      "name": "mesh_border",
-      "type": "MeshQuad"
     }
   }
 }
