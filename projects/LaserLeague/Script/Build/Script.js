@@ -44,6 +44,9 @@ var Script;
     // document.addEventListener("keydown", <EventListener>start);
     let transform;
     let agent;
+    //let speedAgentTranslation: number = 10; // meters per second
+    let ctrForward = new ƒ.Control("Forward", 10, 0 /* PROPORTIONAL */);
+    ctrForward.setDelay(200);
     function start(_event) {
         viewport = _event.detail;
         let graph = viewport.getBranch();
@@ -59,49 +62,71 @@ var Script;
     }
     function update(_event) {
         // ƒ.Physics.world.simulate();  // if physics is included and used
-        movement(_event);
-        let speedLaserRotate = 120; // degrees per second
         let deltaTime = ƒ.Loop.timeFrameReal / 1000;
+        movement(_event, deltaTime);
+        let speedLaserRotate = 120; // degrees per second
         transform.rotateZ(speedLaserRotate * deltaTime);
         viewport.draw();
         ƒ.AudioManager.default.update();
     }
-    function movement(_event) {
-        let deltaTime = ƒ.Loop.timeFrameReal / 1000;
-        let speedAgentTranslation = 10; // meters per second
-        //let speedAgentRotation: number = 360; // meters per second
-        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP])) {
-            if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]) || ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT])) {
-                agent.mtxLocal.translateY((speedAgentTranslation * deltaTime * 2) / 3);
-            }
-            else {
-                agent.mtxLocal.translateY(speedAgentTranslation * deltaTime);
-            }
-        }
-        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN])) {
-            if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]) || ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT])) {
-                agent.mtxLocal.translateY((-speedAgentTranslation * deltaTime * 2) / 3);
-            }
-            else {
-                agent.mtxLocal.translateY(-speedAgentTranslation * deltaTime);
-            }
-        }
-        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT])) {
-            if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP]) || ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN])) {
-                agent.mtxLocal.translateX((speedAgentTranslation * deltaTime * 2) / 3);
-            }
-            else {
-                agent.mtxLocal.translateX(speedAgentTranslation * deltaTime);
-            }
-        }
-        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT])) {
-            if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP]) || ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN])) {
-                agent.mtxLocal.translateX((-speedAgentTranslation * deltaTime * 2) / 3);
-            }
-            else {
-                agent.mtxLocal.translateX(-speedAgentTranslation * deltaTime);
-            }
-        }
+    function movement(_event, _deltaTime) {
+        //let speedAgentTranslation: number = 10; // meters per second
+        let speedAgentRotation = 360; // meters per second
+        let value = (ƒ.Keyboard.mapToValue(-1, 0, [ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP])
+            + ƒ.Keyboard.mapToValue(-1, 0, [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]));
+        ctrForward.setInput(value * _deltaTime);
+        agent.mtxLocal.translateY(ctrForward.getOutput());
+        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT]))
+            agent.mtxLocal.rotateZ(speedAgentRotation * _deltaTime);
+        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]))
+            agent.mtxLocal.rotateZ(-speedAgentRotation * _deltaTime);
     }
+    /* function altMovement(_event: Event): void {
+  
+      let deltaTime: number = ƒ.Loop.timeFrameReal / 1000
+  
+      let speedAgentTranslation: number = 10; // meters per second
+  
+      if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP])) {
+  
+        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]) || ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT])) {
+          agent.mtxLocal.translateY((speedAgentTranslation * deltaTime * 2) / 3)
+        } else {
+          agent.mtxLocal.translateY(speedAgentTranslation * deltaTime)
+        }
+  
+      }
+      if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN])) {
+  
+        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]) || ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT])) {
+          agent.mtxLocal.translateY((-speedAgentTranslation * deltaTime * 2) / 3)
+        } else {
+          agent.mtxLocal.translateY(-speedAgentTranslation * deltaTime)
+        }
+  
+      }
+  
+      if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT])) {
+  
+        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP]) || ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN])) {
+          agent.mtxLocal.translateX((speedAgentTranslation * deltaTime * 2) / 3)
+        } else {
+          agent.mtxLocal.translateX(speedAgentTranslation * deltaTime)
+        }
+  
+  
+      }
+  
+      if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT])) {
+  
+        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP]) || ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN])) {
+          agent.mtxLocal.translateX((-speedAgentTranslation * deltaTime * 2) / 3)
+        } else {
+          agent.mtxLocal.translateX(-speedAgentTranslation * deltaTime)
+        }
+  
+  
+      }
+    } */
 })(Script || (Script = {}));
 //# sourceMappingURL=Script.js.map
