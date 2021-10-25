@@ -44,18 +44,19 @@ var Script;
     // document.addEventListener("keydown", <EventListener>start);
     let transform;
     let agent;
-    //let speedAgentTranslation: number = 10; // meters per second
+    let laser;
     let ctrForward = new ƒ.Control("Forward", 10, 0 /* PROPORTIONAL */);
     ctrForward.setDelay(200);
+    //let speedAgentTranslation: number = 10; // meters per second
     function start(_event) {
         viewport = _event.detail;
         let graph = viewport.getBranch();
         console.log("graph");
         console.log(graph);
         // console.log(graph.getChildrenByName("Agents"));
-        let laser = graph.getChildrenByName("Laserformations")[0].getChildrenByName("Laserblock1")[0].getChildrenByName("center")[0];
-        agent = graph.getChildrenByName("Agents")[0].getChildrenByName("agent1")[0];
+        laser = graph.getChildrenByName("Laserformations")[0].getChildrenByName("Laserblock1")[0];
         transform = laser.getComponent(ƒ.ComponentTransform).mtxLocal;
+        agent = graph.getChildrenByName("Agents")[0].getChildrenByName("agent1")[0];
         viewport.camera.mtxPivot.translateZ(-50);
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
         ƒ.Loop.start(ƒ.LOOP_MODE.TIME_REAL, 60); // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
@@ -67,6 +68,7 @@ var Script;
         let speedLaserRotate = 120; // degrees per second
         transform.rotateZ(speedLaserRotate * deltaTime);
         viewport.draw();
+        checkCollision();
         ƒ.AudioManager.default.update();
     }
     function movement(_event, _deltaTime) {
@@ -80,6 +82,11 @@ var Script;
             agent.mtxLocal.rotateZ(speedAgentRotation * _deltaTime);
         if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]))
             agent.mtxLocal.rotateZ(-speedAgentRotation * _deltaTime);
+    }
+    function checkCollision() {
+        let beam = laser.getChildren()[3];
+        let posLocal = ƒ.Vector3.TRANSFORMATION(agent.mtxWorld.translation, beam.mtxWorldInverse, true);
+        console.log(posLocal.toString());
     }
     /* function altMovement(_event: Event): void {
   

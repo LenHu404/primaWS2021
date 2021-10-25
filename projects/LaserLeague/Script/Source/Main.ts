@@ -8,11 +8,12 @@ namespace Script {
 
   let transform: ƒ.Matrix4x4;
   let agent: ƒ.Node;
-
-  //let speedAgentTranslation: number = 10; // meters per second
+  let laser: ƒ.Node;
 
   let ctrForward: ƒ.Control = new ƒ.Control("Forward", 10, ƒ.CONTROL_TYPE.PROPORTIONAL)
-  ctrForward.setDelay(200)
+  ctrForward.setDelay(200);
+
+  //let speedAgentTranslation: number = 10; // meters per second
 
   function start(_event: CustomEvent): void {
     viewport = _event.detail;
@@ -25,11 +26,12 @@ namespace Script {
 
     // console.log(graph.getChildrenByName("Agents"));
 
-    let laser: ƒ.Node = graph.getChildrenByName("Laserformations")[0].getChildrenByName("Laserblock1")[0].getChildrenByName("center")[0];
+    laser = graph.getChildrenByName("Laserformations")[0].getChildrenByName("Laserblock1")[0];
+    transform = laser.getComponent(ƒ.ComponentTransform).mtxLocal;
 
     agent = graph.getChildrenByName("Agents")[0].getChildrenByName("agent1")[0];
 
-    transform = laser.getComponent(ƒ.ComponentTransform).mtxLocal;
+    
 
 
     viewport.camera.mtxPivot.translateZ(-50);
@@ -50,6 +52,9 @@ namespace Script {
     transform.rotateZ(speedLaserRotate * deltaTime);
 
     viewport.draw();
+
+    checkCollision();
+
     ƒ.AudioManager.default.update();
   }
 
@@ -70,6 +75,12 @@ namespace Script {
     if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]))
       agent.mtxLocal.rotateZ(-speedAgentRotation * _deltaTime);
 
+  }
+
+  function checkCollision(): void {
+    let beam: ƒ.Node = laser.getChildren()[3];
+    let posLocal: ƒ.Vector3 = ƒ.Vector3.TRANSFORMATION(agent.mtxWorld.translation, beam.mtxWorldInverse, true);
+    console.log(posLocal.toString());
   }
 
   /* function altMovement(_event: Event): void {
