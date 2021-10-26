@@ -9,6 +9,9 @@ namespace Script {
   let transform: ƒ.Matrix4x4;
   let agent: ƒ.Node;
   let laser: ƒ.Node;
+  let beamWidth: number = 0.7;
+  let agentRadius: number = 0.5;
+  let beamHeight: number = 6;
 
   let ctrForward: ƒ.Control = new ƒ.Control("Forward", 10, ƒ.CONTROL_TYPE.PROPORTIONAL)
   ctrForward.setDelay(200);
@@ -27,7 +30,7 @@ namespace Script {
     // console.log(graph.getChildrenByName("Agents"));
 
     laser = graph.getChildrenByName("Laserformations")[0].getChildrenByName("Laserblock1")[0];
-    transform = laser.getComponent(ƒ.ComponentTransform).mtxLocal;
+    transform = laser.getChildren()[0].getComponent(ƒ.ComponentTransform).mtxLocal;
 
     agent = graph.getChildrenByName("Agents")[0].getChildrenByName("agent1")[0];
 
@@ -64,7 +67,7 @@ namespace Script {
     let speedAgentRotation: number = 360; // meters per second
 
     let value: number = (
-      ƒ.Keyboard.mapToValue(-1, 0, [ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP])
+      ƒ.Keyboard.mapToValue(1, 0, [ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP])
       + ƒ.Keyboard.mapToValue(-1, 0, [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN])
     )
     ctrForward.setInput(value * _deltaTime);
@@ -78,9 +81,19 @@ namespace Script {
   }
 
   function checkCollision(): void {
-    let beam: ƒ.Node = laser.getChildren()[3];
-    let posLocal: ƒ.Vector3 = ƒ.Vector3.TRANSFORMATION(agent.mtxWorld.translation, beam.mtxWorldInverse, true);
-    console.log(posLocal.toString());
+
+    laser.getChildren()[0].getChildren().forEach(element => {
+      let beam: ƒ.Node = element;
+      let posLocal: ƒ.Vector3 = ƒ.Vector3.TRANSFORMATION(agent.mtxWorld.translation, beam.mtxWorldInverse, true);
+      //console.log(posLocal.toString()+ beam.name);
+
+      if (posLocal.x < ( - beamWidth/2 - agentRadius) || posLocal.x > (beamWidth/2 + agentRadius) || posLocal.y < (agentRadius) || posLocal.y > (beamHeight + agentRadius)) {
+        //console.log("not intersecting");
+      } else {
+        console.log("intersecting");
+      }
+
+    });
   }
 
   /* function altMovement(_event: Event): void {

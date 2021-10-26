@@ -45,6 +45,9 @@ var Script;
     let transform;
     let agent;
     let laser;
+    let beamWidth = 0.7;
+    let agentRadius = 0.5;
+    let beamHeight = 6;
     let ctrForward = new ƒ.Control("Forward", 10, 0 /* PROPORTIONAL */);
     ctrForward.setDelay(200);
     //let speedAgentTranslation: number = 10; // meters per second
@@ -55,7 +58,7 @@ var Script;
         console.log(graph);
         // console.log(graph.getChildrenByName("Agents"));
         laser = graph.getChildrenByName("Laserformations")[0].getChildrenByName("Laserblock1")[0];
-        transform = laser.getComponent(ƒ.ComponentTransform).mtxLocal;
+        transform = laser.getChildren()[0].getComponent(ƒ.ComponentTransform).mtxLocal;
         agent = graph.getChildrenByName("Agents")[0].getChildrenByName("agent1")[0];
         viewport.camera.mtxPivot.translateZ(-50);
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
@@ -74,7 +77,7 @@ var Script;
     function movement(_event, _deltaTime) {
         //let speedAgentTranslation: number = 10; // meters per second
         let speedAgentRotation = 360; // meters per second
-        let value = (ƒ.Keyboard.mapToValue(-1, 0, [ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP])
+        let value = (ƒ.Keyboard.mapToValue(1, 0, [ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP])
             + ƒ.Keyboard.mapToValue(-1, 0, [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]));
         ctrForward.setInput(value * _deltaTime);
         agent.mtxLocal.translateY(ctrForward.getOutput());
@@ -84,9 +87,17 @@ var Script;
             agent.mtxLocal.rotateZ(-speedAgentRotation * _deltaTime);
     }
     function checkCollision() {
-        let beam = laser.getChildren()[3];
-        let posLocal = ƒ.Vector3.TRANSFORMATION(agent.mtxWorld.translation, beam.mtxWorldInverse, true);
-        console.log(posLocal.toString());
+        laser.getChildren()[0].getChildren().forEach(element => {
+            let beam = element;
+            let posLocal = ƒ.Vector3.TRANSFORMATION(agent.mtxWorld.translation, beam.mtxWorldInverse, true);
+            //console.log(posLocal.toString()+ beam.name);
+            if (posLocal.x < (-beamWidth / 2 - agentRadius) || posLocal.x > (beamWidth / 2 + agentRadius) || posLocal.y < (agentRadius) || posLocal.y > (beamHeight + agentRadius)) {
+                //console.log("not intersecting");
+            }
+            else {
+                console.log("intersecting");
+            }
+        });
     }
     /* function altMovement(_event: Event): void {
   
