@@ -19,6 +19,7 @@ namespace Script {
       // Listen to this component being added to or removed from a node
       this.addEventListener(ƒ.EVENT.COMPONENT_ADD, this.hndEvent);
       this.addEventListener(ƒ.EVENT.COMPONENT_REMOVE, this.hndEvent);
+
     }
 
     // Activate the functions of this component as response to events
@@ -26,12 +27,19 @@ namespace Script {
       switch (_event.type) {
         case ƒ.EVENT.COMPONENT_ADD:
           ƒ.Debug.log(this.message, this.node);
+          ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, this.rotateLaser);
           break;
         case ƒ.EVENT.COMPONENT_REMOVE:
           this.removeEventListener(ƒ.EVENT.COMPONENT_ADD, this.hndEvent);
           this.removeEventListener(ƒ.EVENT.COMPONENT_REMOVE, this.hndEvent);
           break;
       }
+    }
+
+    public rotateLaser = (_event: Event) => {
+      let deltaTime: number = ƒ.Loop.timeFrameReal / 1000;
+      let speedLaserRotate: number = 120; // degrees per second
+      this.node.getChildrenByName("center")[0].mtxLocal.rotateZ(speedLaserRotate * deltaTime);
     }
 
     // protected reduceMutator(_mutator: ƒ.Mutator): void {

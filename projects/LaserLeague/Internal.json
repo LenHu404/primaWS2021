@@ -34,7 +34,7 @@
       "shader": "ShaderFlat",
       "coat": {
         "ƒ.CoatColored": {
-          "color": "[0.27450980392156865, 0.5450980392156862, 0.7843137254901961, 1]"
+          "color": "[0, 0, 0, 1]"
         }
       }
     }
@@ -425,6 +425,14 @@
                             "active": true
                           },
                           "idMaterial": "Material|2021-10-14T22:18:56.792Z|46979"
+                        }
+                      }
+                    ],
+                    "CustomComponentScript": [
+                      {
+                        "Script.CustomComponentScript": {
+                          "active": true,
+                          "message": "CustomComponentScript added to "
                         }
                       }
                     ]

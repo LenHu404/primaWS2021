@@ -14,12 +14,18 @@ var Script;
                     switch (_event.type) {
                         case "componentAdd" /* COMPONENT_ADD */:
                             ƒ.Debug.log(this.message, this.node);
+                            ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, this.rotateLaser);
                             break;
                         case "componentRemove" /* COMPONENT_REMOVE */:
                             this.removeEventListener("componentAdd" /* COMPONENT_ADD */, this.hndEvent);
                             this.removeEventListener("componentRemove" /* COMPONENT_REMOVE */, this.hndEvent);
                             break;
                     }
+                };
+                this.rotateLaser = (_event) => {
+                    let deltaTime = ƒ.Loop.timeFrameReal / 1000;
+                    let speedLaserRotate = 120; // degrees per second
+                    this.node.getChildrenByName("center")[0].mtxLocal.rotateZ(speedLaserRotate * deltaTime);
                 };
                 // Don't start when running in editor
                 if (ƒ.Project.mode == ƒ.MODE.EDITOR)
@@ -42,24 +48,38 @@ var Script;
     let viewport;
     document.addEventListener("interactiveViewportStarted", start);
     // document.addEventListener("keydown", <EventListener>start);
-    let transform;
+    let laserTransform;
+    let laserArray;
     let agent;
     let laser;
     let beamWidth = 0.7;
     let agentRadius = 0.5;
     let beamHeight = 6;
+    let copyLaser;
     let ctrForward = new ƒ.Control("Forward", 10, 0 /* PROPORTIONAL */);
     ctrForward.setDelay(200);
     //let speedAgentTranslation: number = 10; // meters per second
-    function start(_event) {
+    async function start(_event) {
         viewport = _event.detail;
         let graph = viewport.getBranch();
         console.log("graph");
         console.log(graph);
         // console.log(graph.getChildrenByName("Agents"));
         laser = graph.getChildrenByName("Laserformations")[0].getChildrenByName("Laserblock1")[0];
-        transform = laser.getChildren()[0].getComponent(ƒ.ComponentTransform).mtxLocal;
+        laserTransform = laser.getChildren()[0].getComponent(ƒ.ComponentTransform).mtxLocal;
         agent = graph.getChildrenByName("Agents")[0].getChildrenByName("agent1")[0];
+        let graphLaser = await ƒ.Project.registerAsGraph(laser, false);
+        copyLaser = await ƒ.Project.createGraphInstance(graphLaser);
+        let countLaser = graph.getChildrenByName("Laserformations")[0].getChildren().length;
+        console.log(countLaser);
+        laserArray = new Array(countLaser);
+        for (let i = 0; i < countLaser; i++) {
+            laserArray[i] = graph.getChildrenByName("Laserformations")[0].getChildren()[i].getChildrenByName("center")[0].mtxLocal;
+        }
+        graph.getChildrenByName("Laserformations")[0].addChild(copyLaser);
+        //copy.addComponent(new ƒ.ComponentTransform);
+        //copy.mtxLocal.translateX(5);
+        copyLaser.mtxLocal.translation = ƒ.Vector3.X(10);
         viewport.camera.mtxPivot.translateZ(-50);
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
         ƒ.Loop.start(ƒ.LOOP_MODE.TIME_REAL, 60); // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
@@ -67,11 +87,14 @@ var Script;
     function update(_event) {
         // ƒ.Physics.world.simulate();  // if physics is included and used
         let deltaTime = ƒ.Loop.timeFrameReal / 1000;
+        //let speedLaserRotate: number = 120; // degrees per second
+        //laserTransform.rotateZ(speedLaserRotate * deltaTime);
+        /* laserArray.forEach(element => {
+          element.rotateZ(speedLaserRotate * deltaTime);
+        }); */
         movement(_event, deltaTime);
-        let speedLaserRotate = 120; // degrees per second
-        transform.rotateZ(speedLaserRotate * deltaTime);
-        viewport.draw();
         checkCollision();
+        viewport.draw();
         ƒ.AudioManager.default.update();
     }
     function movement(_event, _deltaTime) {

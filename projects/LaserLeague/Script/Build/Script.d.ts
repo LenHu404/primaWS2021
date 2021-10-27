@@ -5,6 +5,7 @@ declare namespace Script {
         message: string;
         constructor();
         hndEvent: (_event: Event) => void;
+        rotateLaser: (_event: Event) => void;
     }
 }
 declare namespace Script {
