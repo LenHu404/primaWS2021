@@ -5,8 +5,18 @@ declare namespace Script {
         message: string;
         constructor();
         hndEvent: (_event: Event) => void;
-        rotateLaser: (_event: Event) => void;
     }
 }
 declare namespace Script {
+}
+declare namespace Script {
+    import ƒ = FudgeCore;
+    class laserRotatorScript extends ƒ.ComponentScript {
+        static readonly iSubclass: number;
+        message: string;
+        speedLaserRotate: number;
+        constructor();
+        hndEvent: (_event: Event) => void;
+        update: (_event: Event) => void;
+    }
 }
