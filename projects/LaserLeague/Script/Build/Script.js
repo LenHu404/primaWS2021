@@ -69,8 +69,6 @@ var Script;
     }
     function update(_event) {
         // ƒ.Physics.world.simulate();  // if physics is included and used
-        let deltaTime = ƒ.Loop.timeFrameReal / 1000;
-        movement(_event, deltaTime);
         checkCollision();
         viewport.draw();
         ƒ.AudioManager.default.update();
@@ -90,52 +88,26 @@ var Script;
             }
         }
     }
-    function movement(_event, _deltaTime) {
-        let speedAgentTranslation = 10; // meters per second
-        let speedAgentRotation = 360; // meters per second
-        let speedValue = (ƒ.Keyboard.mapToValue(1, 0, [ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP])
-            + ƒ.Keyboard.mapToValue(-1, 0, [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]));
-        ctrForward.setInput(speedValue * _deltaTime);
-        agent.mtxLocal.translateY(ctrForward.getOutput() * speedAgentTranslation);
-        let rotationValue = (ƒ.Keyboard.mapToValue(-1, 0, [ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]))
-            + (ƒ.Keyboard.mapToValue(1, 0, [ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT]));
-        ctrlRotation.setInput(rotationValue * _deltaTime);
-        agent.mtxLocal.rotateZ(ctrlRotation.getOutput() * speedAgentRotation);
-        /* if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT]))
-          agent.mtxLocal.rotateZ(speedAgentRotation * _deltaTime);
-        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]))
-          agent.mtxLocal.rotateZ(-speedAgentRotation * _deltaTime); */
-        let currPos = agent.mtxLocal.translation;
-        //console.log(agent.mtxLocal.translation.toString());
-        if (agent.mtxLocal.translation.x + agentRadius > 25) {
-            console.log("+x");
-            agent.mtxLocal.translation = new ƒ.Vector3(-25 + agentRadius, currPos.y, currPos.z);
-        }
-        if (agent.mtxLocal.translation.x - agentRadius < -25) {
-            console.log("-x");
-            agent.mtxLocal.translation = new ƒ.Vector3(25 - agentRadius, currPos.y, currPos.z);
-        }
-        if (agent.mtxLocal.translation.y + agentRadius > 15) {
-            console.log("+y");
-            agent.mtxLocal.translation = new ƒ.Vector3(currPos.x, -15 + agentRadius, currPos.z);
-        }
-        if (agent.mtxLocal.translation.y - agentRadius < -15) {
-            console.log("+y");
-            agent.mtxLocal.translation = new ƒ.Vector3(currPos.x, 15 - agentRadius, currPos.z);
-        }
-    }
     function checkCollision() {
         for (let i = 0; i < laserBlocks.getChildren().length; i++) {
             laserBlocks.getChildren()[i].getChildren()[0].getChildren().forEach(element => {
                 let beam = element;
                 let posLocal = ƒ.Vector3.TRANSFORMATION(agent.mtxWorld.translation, beam.mtxWorldInverse, true);
+                /* let minX = beam.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2 + agent.radius;
+                let minY = beam.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.y + agent.radius;
                 //console.log(posLocal.toString()+ beam.name);
+        
+        
+                if (posLocal.x <= (minX) && posLocal.x >= -(minX) && posLocal.y <= minY && posLocal.y >= 0) {
+                  agent.getComponent(agentComponentScript).respwan;
+                }
+         */
                 if (posLocal.x < (-beamWidth / 2 - agentRadius) || posLocal.x > (beamWidth / 2 + agentRadius) || posLocal.y < (agentRadius) || posLocal.y > (beamHeight + agentRadius)) {
                     //console.log("not intersecting");
                 }
                 else {
                     console.log("intersecting");
-                    agent.mtxLocal.translation = new ƒ.Vector3(0, 0, 0);
+                    agent.getComponent(Script.agentComponentScript).respwan();
                 }
             });
         }
@@ -187,6 +159,90 @@ var Script;
   
       }
     } */
+})(Script || (Script = {}));
+var Script;
+(function (Script) {
+    var ƒ = FudgeCore;
+    ƒ.Project.registerScriptNamespace(Script); // Register the namespace to FUDGE for serialization
+    let agentComponentScript = /** @class */ (() => {
+        class agentComponentScript extends ƒ.ComponentScript {
+            constructor() {
+                super();
+                // Properties may be mutated by users in the editor via the automatically created user interface
+                this.message = "agentComponentScript added to ";
+                this.ctrForward = new ƒ.Control("Forward", 1, 0 /* PROPORTIONAL */);
+                this.ctrlRotation = new ƒ.Control("Rotation", 1, 0 /* PROPORTIONAL */);
+                this.agentDiameter = 2;
+                // Activate the functions of this component as response to events
+                this.hndEvent = (_event) => {
+                    switch (_event.type) {
+                        case "componentAdd" /* COMPONENT_ADD */:
+                            ƒ.Debug.log(this.message, this.node);
+                            ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, this.update);
+                            break;
+                        case "componentRemove" /* COMPONENT_REMOVE */:
+                            this.removeEventListener("componentAdd" /* COMPONENT_ADD */, this.hndEvent);
+                            this.removeEventListener("componentRemove" /* COMPONENT_REMOVE */, this.hndEvent);
+                            break;
+                    }
+                };
+                this.update = (_event) => {
+                    this.movement(_event);
+                };
+                this.respwan = () => {
+                    this.node.mtxLocal.translation = new ƒ.Vector3(0, 0, 0);
+                    this.ctrForward.setDelay(0);
+                    this.ctrForward.setInput(0);
+                    this.ctrlRotation.setInput(0);
+                    this.ctrForward.setDelay(200);
+                    this.node.mtxLocal.rotation = new ƒ.Vector3(0, 0, 0);
+                };
+                this.movement = (_event) => {
+                    let deltaTime = ƒ.Loop.timeFrameReal / 1000;
+                    let speedAgentTranslation = 10; // meters per second
+                    let speedAgentRotation = 360; // meters per second
+                    let speedValue = (ƒ.Keyboard.mapToValue(1, 0, [ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP])
+                        + ƒ.Keyboard.mapToValue(-1, 0, [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]));
+                    this.ctrForward.setInput(speedValue * deltaTime);
+                    this.node.mtxLocal.translateY(this.ctrForward.getOutput() * speedAgentTranslation);
+                    let rotationValue = (ƒ.Keyboard.mapToValue(-1, 0, [ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]))
+                        + (ƒ.Keyboard.mapToValue(1, 0, [ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT]));
+                    this.ctrlRotation.setInput(rotationValue * deltaTime);
+                    this.node.mtxLocal.rotateZ(this.ctrlRotation.getOutput() * speedAgentRotation);
+                    let currPos = this.node.mtxLocal.translation;
+                    //console.log(agent.mtxLocal.translation.toString());
+                    if (this.node.mtxLocal.translation.x + this.agentDiameter / 2 > 25) {
+                        console.log("+x");
+                        this.node.mtxLocal.translation = new ƒ.Vector3(-25 + this.agentDiameter / 2, currPos.y, currPos.z);
+                    }
+                    if (this.node.mtxLocal.translation.x - this.agentDiameter / 2 < -25) {
+                        console.log("-x");
+                        this.node.mtxLocal.translation = new ƒ.Vector3(25 - this.agentDiameter / 2, currPos.y, currPos.z);
+                    }
+                    if (this.node.mtxLocal.translation.y + this.agentDiameter / 2 > 15) {
+                        console.log("+y");
+                        this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x, -15 + this.agentDiameter / 2, currPos.z);
+                    }
+                    if (this.node.mtxLocal.translation.y - this.agentDiameter / 2 < -15) {
+                        console.log("-y");
+                        this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x, 15 - this.agentDiameter / 2, currPos.z);
+                    }
+                };
+                this.ctrForward.setDelay(200);
+                this.ctrlRotation.setDelay(50);
+                // Don't start when running in editor
+                if (ƒ.Project.mode == ƒ.MODE.EDITOR)
+                    return;
+                // Listen to this component being added to or removed from a node
+                this.addEventListener("componentAdd" /* COMPONENT_ADD */, this.hndEvent);
+                this.addEventListener("componentRemove" /* COMPONENT_REMOVE */, this.hndEvent);
+            }
+        }
+        // Register the script as component for use in the editor via drag&drop
+        agentComponentScript.iSubclass = ƒ.Component.registerSubclass(Script.CustomComponentScript);
+        return agentComponentScript;
+    })();
+    Script.agentComponentScript = agentComponentScript;
 })(Script || (Script = {}));
 var Script;
 (function (Script) {

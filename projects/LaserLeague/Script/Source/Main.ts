@@ -49,9 +49,6 @@ namespace Script {
   function update(_event: Event): void {
     // ƒ.Physics.world.simulate();  // if physics is included and used
 
-    let deltaTime: number = ƒ.Loop.timeFrameReal / 1000;
-
-    movement(_event, deltaTime);
     checkCollision();
 
     viewport.draw();
@@ -82,51 +79,7 @@ namespace Script {
     }
   }
 
-  function movement(_event: Event, _deltaTime: number): void {
-
-    let speedAgentTranslation: number = 10; // meters per second
-    let speedAgentRotation: number = 360; // meters per second
-
-    let speedValue: number = (
-      ƒ.Keyboard.mapToValue(1, 0, [ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP])
-      + ƒ.Keyboard.mapToValue(-1, 0, [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN])
-    )
-    ctrForward.setInput(speedValue * _deltaTime);
-    agent.mtxLocal.translateY(ctrForward.getOutput() * speedAgentTranslation);
-
-    let rotationValue: number = (
-      ƒ.Keyboard.mapToValue(-1, 0, [ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]))
-      + (ƒ.Keyboard.mapToValue(1, 0, [ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT]));
-
-    ctrlRotation.setInput(rotationValue * _deltaTime);
-    agent.mtxLocal.rotateZ(ctrlRotation.getOutput() * speedAgentRotation);
-
-    /* if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT]))
-      agent.mtxLocal.rotateZ(speedAgentRotation * _deltaTime);
-    if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]))
-      agent.mtxLocal.rotateZ(-speedAgentRotation * _deltaTime); */
-
-    let currPos: ƒ.Vector3 = agent.mtxLocal.translation;
-    //console.log(agent.mtxLocal.translation.toString());
-
-    if (agent.mtxLocal.translation.x + agentRadius > 25) {
-      console.log("+x");
-      agent.mtxLocal.translation = new ƒ.Vector3(-25 + agentRadius, currPos.y, currPos.z);
-    }
-    if (agent.mtxLocal.translation.x - agentRadius < -25) {
-      console.log("-x");
-      agent.mtxLocal.translation = new ƒ.Vector3(25 - agentRadius, currPos.y, currPos.z);
-    }
-
-    if (agent.mtxLocal.translation.y + agentRadius > 15) {
-      console.log("+y");
-      agent.mtxLocal.translation = new ƒ.Vector3(currPos.x, -15 + agentRadius, currPos.z);
-    }
-    if (agent.mtxLocal.translation.y - agentRadius < -15) {
-      console.log("+y");
-      agent.mtxLocal.translation = new ƒ.Vector3(currPos.x, 15 - agentRadius, currPos.z);
-    }
-  }
+  
 
   function checkCollision(): void {
 
@@ -135,13 +88,21 @@ namespace Script {
       laserBlocks.getChildren()[i].getChildren()[0].getChildren().forEach(element => {
         let beam: ƒ.Node = element;
         let posLocal: ƒ.Vector3 = ƒ.Vector3.TRANSFORMATION(agent.mtxWorld.translation, beam.mtxWorldInverse, true);
+
+        /* let minX = beam.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2 + agent.radius;
+        let minY = beam.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.y + agent.radius;
         //console.log(posLocal.toString()+ beam.name);
 
+
+        if (posLocal.x <= (minX) && posLocal.x >= -(minX) && posLocal.y <= minY && posLocal.y >= 0) {
+          agent.getComponent(agentComponentScript).respwan;
+        }
+ */
         if (posLocal.x < (- beamWidth / 2 - agentRadius) || posLocal.x > (beamWidth / 2 + agentRadius) || posLocal.y < (agentRadius) || posLocal.y > (beamHeight + agentRadius)) {
           //console.log("not intersecting");
         } else {
           console.log("intersecting");
-          agent.mtxLocal.translation = new ƒ.Vector3(0,0,0);
+          agent.getComponent(agentComponentScript).respwan();
         }
 
       });
@@ -149,6 +110,8 @@ namespace Script {
 
 
   }
+
+  
 
   /* function altMovement(_event: Event): void {
 

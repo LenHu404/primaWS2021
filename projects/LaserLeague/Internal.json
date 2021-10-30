@@ -312,6 +312,15 @@
                           }
                         }
                       }
+                    ],
+                    "agentComponentScript": [
+                      {
+                        "Script.agentComponentScript": {
+                          "active": true,
+                          "message": "agentComponentScript added to ",
+                          "agentRadius": 2
+                        }
+                      }
                     ]
                   },
                   "children": [
