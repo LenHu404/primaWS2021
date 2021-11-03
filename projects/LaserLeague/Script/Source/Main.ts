@@ -1,4 +1,4 @@
-namespace Script {
+namespace LaserLeague {
   import ƒ = FudgeCore;
   ƒ.Debug.info("Main Program Template running!")
 
@@ -7,13 +7,13 @@ namespace Script {
   // document.addEventListener("keydown", <EventListener>start);
 
   //let laserTransform: ƒ.Matrix4x4;
-  let agent: ƒ.Node;
+  let agent: Agent;
   //let laser: ƒ.Node;
   let countLaserblocks: number = 6;
   let laserBlocks: ƒ.Node;
-  let beamWidth: number = 0.7;
-  let agentRadius: number = 1;
-  let beamHeight: number = 6;
+  /* let beamWidth: number = 6;
+  let beamHeight: number = 0.7;
+  let agentRadius: number = 1; */
   let copyLaser: ƒ.GraphInstance;
 
 
@@ -30,20 +30,20 @@ namespace Script {
 
     let graph: ƒ.Node = viewport.getBranch();
 
-    console.log("graph: ", graph);
+
+    //agent = graph.getChildrenByName("Agents")[0].getChildrenByName("agent1")[0];
 
     laserBlocks = graph.getChildrenByName("Laserformations")[0];
 
-    agent = graph.getChildrenByName("Agents")[0].getChildrenByName("agent1")[0];
-
-
+    agent = new Agent();
+    graph.getChildrenByName("Agents")[0].addChild(agent);
     addLaser(_event, graph);
 
     viewport.camera.mtxPivot.translateZ(-50);
 
     ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
     ƒ.Loop.start(ƒ.LOOP_MODE.TIME_REAL, 60);  // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
-
+    console.log("graph: ", graph);
   }
 
   function update(_event: Event): void {
@@ -79,85 +79,56 @@ namespace Script {
     }
   }
 
+
   
 
-  function checkCollision(): void {
+  function checkCollision() {
+    let _agent: ƒ.Node = agent.getChildren()[0];
 
     for (let i = 0; i < laserBlocks.getChildren().length; i++) {
 
       laserBlocks.getChildren()[i].getChildren()[0].getChildren().forEach(element => {
         let beam: ƒ.Node = element;
-        let posLocal: ƒ.Vector3 = ƒ.Vector3.TRANSFORMATION(agent.mtxWorld.translation, beam.mtxWorldInverse, true);
+        let posLocal: ƒ.Vector3 = ƒ.Vector3.TRANSFORMATION(_agent.mtxWorld.translation, beam.mtxWorldInverse, true);
+        let x = beam.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2 + _agent.radius/2;
+        let y = beam.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.y + _agent.radius/2;
 
-        /* let minX = beam.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2 + agent.radius;
-        let minY = beam.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.y + agent.radius;
-        //console.log(posLocal.toString()+ beam.name);
-
-
-        if (posLocal.x <= (minX) && posLocal.x >= -(minX) && posLocal.y <= minY && posLocal.y >= 0) {
-          agent.getComponent(agentComponentScript).respwan;
-        }
- */
-        if (posLocal.x < (- beamWidth / 2 - agentRadius) || posLocal.x > (beamWidth / 2 + agentRadius) || posLocal.y < (agentRadius) || posLocal.y > (beamHeight + agentRadius)) {
-          //console.log("not intersecting");
-        } else {
+        if (posLocal.x <= (x) && posLocal.x >= -(x) && posLocal.y <= y && posLocal.y >= 0) {
           console.log("intersecting");
-          agent.getComponent(agentComponentScript).respwan();
+          _agent.getComponent(agentComponentScript).respawn();
         }
+      });
+    }
+  }
+}
 
+
+/* function checkCollisionALT(): void {
+    let _agent: ƒ.Node = agent.getChildren()[0];
+
+    for (let i = 0; i < laserBlocks.getChildren().length; i++) {
+
+      laserBlocks.getChildren()[i].getChildren()[0].getChildren().forEach(element => {
+        let beam: ƒ.Node = element;
+        let posLocal: ƒ.Vector3 = ƒ.Vector3.TRANSFORMATION(_agent.mtxWorld.translation, beam.mtxWorldInverse, true);
+        let maxX: number = beam.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x + _agent.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2;
+        let minX: number = - beam.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x + _agent.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2;
+        let maxY: number = beam.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.y / 2 - _agent.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2;
+        let minY: number = - beam.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.y + _agent.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2;
+
+        if (i = 0) {
+          console.log(posLocal);
+        } 
+        if (posLocal.x > minX && posLocal.x < maxX && posLocal.y > maxY && posLocal.y < minY) {
+          console.log("intersecting");
+          _agent.getComponent(agentComponentScript).respawn();
+
+        } else {
+          //console.log("not intersecting");
+        }
       });
     }
 
 
-  }
 
-  
-
-  /* function altMovement(_event: Event): void {
-
-    let deltaTime: number = ƒ.Loop.timeFrameReal / 1000
-
-    let speedAgentTranslation: number = 10; // meters per second
-
-    if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP])) {
-
-      if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]) || ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT])) {
-        agent.mtxLocal.translateY((speedAgentTranslation * deltaTime * 2) / 3)
-      } else {
-        agent.mtxLocal.translateY(speedAgentTranslation * deltaTime)
-      }
-
-    }
-    if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN])) {
-
-      if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]) || ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT])) {
-        agent.mtxLocal.translateY((-speedAgentTranslation * deltaTime * 2) / 3)
-      } else {
-        agent.mtxLocal.translateY(-speedAgentTranslation * deltaTime)
-      }
-
-    }
-
-    if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT])) {
-
-      if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP]) || ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN])) {
-        agent.mtxLocal.translateX((speedAgentTranslation * deltaTime * 2) / 3)
-      } else {
-        agent.mtxLocal.translateX(speedAgentTranslation * deltaTime)
-      }
-
-
-    }
-
-    if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT])) {
-
-      if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP]) || ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN])) {
-        agent.mtxLocal.translateX((-speedAgentTranslation * deltaTime * 2) / 3)
-      } else {
-        agent.mtxLocal.translateX(-speedAgentTranslation * deltaTime)
-      }
-
-
-    }
   } */
-}
