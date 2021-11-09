@@ -1,8 +1,8 @@
 namespace LaserLeague {
-    import ƒ = FudgeCore;
+    /*import ƒ = FudgeCore;
     window.addEventListener("click", start);
-    let nodes: ƒ.Node[] = [];
-    let nodeControlled: ƒ.Node;
+     let nodes: ƒ.Node[] = [];
+    let nodeControlled: ƒ.Node; 
 
     async function start(_event: Event): Promise<void> {
         /* window.removeEventListener("click", start);
@@ -32,7 +32,7 @@ namespace LaserLeague {
         nodeControlled = nodes[0];
     
         ƒ.AudioManager.default.listenTo(nodes[0]);
-        //log(); */
-      }
+        //log(); 
+      }*/
 
 }

@@ -161,7 +161,7 @@ var LaserLeague;
                 if (posLocal.x <= (x) && posLocal.x >= -(x) && posLocal.y <= y && posLocal.y >= 0) {
                     console.log("intersecting");
                     LaserLeague.GameState.get().health -= 0.05;
-                    LaserLeague.GameState.get().highscore -= 500;
+                    //GameState.get().highscore -= 500;
                     let cmpAudio = graph.getComponents(ƒ.ComponentAudio)[1];
                     cmpAudio.play(true);
                     _agent.getComponent(LaserLeague.agentComponentScript).respawn();
@@ -210,42 +210,6 @@ var LaserLeague;
 
 
   } */ 
-var LaserLeague;
-(function (LaserLeague) {
-    window.addEventListener("click", start);
-    let nodes = [];
-    let nodeControlled;
-    async function start(_event) {
-        /* window.removeEventListener("click", start);
-        //window.addEventListener("keydown", handleKeydown);
-        const sndHurt: ƒ.Audio = new ƒ.Audio("Sound/UOH.mp3");
-        /* let audioTrancy: ƒ.Audio = new ƒ.Audio("Sound/trancyvania.mp3");
-        let audioHypno: ƒ.Audio = new ƒ.Audio("Sound/hypnotic.mp3");
-        // await audioHypno.asyncLoad("Sound/hypnotic.mp3");
-    
-    
-         for (let i: number = 0; i < 10; i++)
-          nodes.push(new ƒ.Node("Node" + i));
-    
-        let cmpAudio: ƒ.ComponentAudio = new ƒ.ComponentAudio(sndHurt, true, true);
-        cmpAudio.mtxPivot.translateX(2);
-        cmpAudio.play(true);
-        nodes[0].addComponent(cmpAudio);
-        
-        cmpAudio = new ƒ.ComponentAudio(audioTrancy, true, true);
-        cmpAudio.mtxPivot.translateX(-2);
-        nodes[1].addComponent(cmpAudio);
-        
-        cmpAudio = new ƒ.ComponentAudio(audioMario, true, true);
-        cmpAudio.mtxPivot.translateX(0);
-        nodes[2].addComponent(cmpAudio);
-    
-        nodeControlled = nodes[0];
-    
-        ƒ.AudioManager.default.listenTo(nodes[0]);
-        //log(); */
-    }
-})(LaserLeague || (LaserLeague = {}));
 var LaserLeague;
 (function (LaserLeague) {
     var ƒ = FudgeCore;
