@@ -5,6 +5,8 @@ var LaserLeague;
     class Agent extends ƒ.Node {
         constructor() {
             super("Agent");
+            this.Health = 1;
+            this.name = "Agent Smith";
             /* this.addComponent(new ƒ.ComponentTransform);
             this.addComponent(new ƒ.ComponentMesh(new ƒ.MeshQuad("MeshAgnt")));
             this.addComponent(new ƒ.ComponentMaterial(
@@ -64,12 +66,36 @@ var LaserLeague;
 var LaserLeague;
 (function (LaserLeague) {
     var ƒ = FudgeCore;
+    var ƒui = FudgeUserInterface;
+    class GameState extends ƒ.Mutable {
+        constructor() {
+            super();
+            this.name = "LaserLeague";
+            this.health = 1;
+            this.highscore = 0;
+            let domHud = document.querySelector("#Hud");
+            GameState.instance = this;
+            GameState.controller = new ƒui.Controller(this, domHud);
+            console.log("Hud-Controller", GameState.controller);
+        }
+        static get() {
+            return GameState.instance || new GameState();
+        }
+        reduceMutator(_mutator) { }
+    }
+    LaserLeague.GameState = GameState;
+})(LaserLeague || (LaserLeague = {}));
+var LaserLeague;
+(function (LaserLeague) {
+    var ƒ = FudgeCore;
     ƒ.Debug.info("Main Program Template running!");
     let viewport;
     document.addEventListener("interactiveViewportStarted", start);
     // document.addEventListener("keydown", <EventListener>start);
     //let laserTransform: ƒ.Matrix4x4;
     let agent;
+    let graph;
+    //let goldPoint: GoldPoint;
     //let laser: ƒ.Node;
     let countLaserblocks = 6;
     let laserBlocks;
@@ -84,11 +110,15 @@ var LaserLeague;
     //let speedAgentTranslation: number = 10; // meters per second
     function start(_event) {
         viewport = _event.detail;
-        let graph = viewport.getBranch();
+        graph = viewport.getBranch();
         //agent = graph.getChildrenByName("Agents")[0].getChildrenByName("agent1")[0];
         laserBlocks = graph.getChildrenByName("Laserformations")[0];
         agent = new LaserLeague.Agent();
+        //goldPoint = new GoldPoint();
         graph.getChildrenByName("Agents")[0].addChild(agent);
+        //graph.getChildrenByName("GoldPoints")[0].addChild(goldPoint);
+        let domName = document.querySelector("#Hud>input");
+        domName.textContent = agent.name;
         addLaser(_event, graph);
         viewport.camera.mtxPivot.translateZ(-50);
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
@@ -99,7 +129,11 @@ var LaserLeague;
         // ƒ.Physics.world.simulate();  // if physics is included and used
         checkCollision();
         viewport.draw();
+        /*agent.Health -= 0.001;
+       let domHealth: HTMLInputElement = document.querySelector("input");
+       domHealth.value = agent.Health.toString(); */
         ƒ.AudioManager.default.update();
+        LaserLeague.GameState.get().highscore += 1;
     }
     async function addLaser(_event, _graph) {
         let graphLaser = FudgeCore.Project.resources["Graph|2021-10-28T13:06:41.527Z|18999"]; // get the laser-ressource
@@ -126,11 +160,26 @@ var LaserLeague;
                 let y = beam.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.y + _agent.radius / 2;
                 if (posLocal.x <= (x) && posLocal.x >= -(x) && posLocal.y <= y && posLocal.y >= 0) {
                     console.log("intersecting");
+                    LaserLeague.GameState.get().health -= 0.05;
+                    LaserLeague.GameState.get().highscore -= 500;
+                    let cmpAudio = graph.getComponents(ƒ.ComponentAudio)[1];
+                    cmpAudio.play(true);
                     _agent.getComponent(LaserLeague.agentComponentScript).respawn();
                 }
             });
         }
     }
+    /* function getcmpAudio(name: string): ƒ.ComponentAudio {
+      let cmpAudios: ƒ.ComponentAudio[] = graph.getComponents(ƒ.ComponentAudio);
+      let cmpAudio: ƒ.ComponentAudio;
+      cmpAudios.forEach(element => {
+        if (element.getAudioNode.name)
+      });
+      for (let i: number = 0; i < cmpAudios.length; i++) {
+        if ()
+      }
+      return
+   } */
 })(LaserLeague || (LaserLeague = {}));
 /* function checkCollisionALT(): void {
     let _agent: ƒ.Node = agent.getChildren()[0];
@@ -161,6 +210,42 @@ var LaserLeague;
 
 
   } */ 
+var LaserLeague;
+(function (LaserLeague) {
+    window.addEventListener("click", start);
+    let nodes = [];
+    let nodeControlled;
+    async function start(_event) {
+        /* window.removeEventListener("click", start);
+        //window.addEventListener("keydown", handleKeydown);
+        const sndHurt: ƒ.Audio = new ƒ.Audio("Sound/UOH.mp3");
+        /* let audioTrancy: ƒ.Audio = new ƒ.Audio("Sound/trancyvania.mp3");
+        let audioHypno: ƒ.Audio = new ƒ.Audio("Sound/hypnotic.mp3");
+        // await audioHypno.asyncLoad("Sound/hypnotic.mp3");
+    
+    
+         for (let i: number = 0; i < 10; i++)
+          nodes.push(new ƒ.Node("Node" + i));
+    
+        let cmpAudio: ƒ.ComponentAudio = new ƒ.ComponentAudio(sndHurt, true, true);
+        cmpAudio.mtxPivot.translateX(2);
+        cmpAudio.play(true);
+        nodes[0].addComponent(cmpAudio);
+        
+        cmpAudio = new ƒ.ComponentAudio(audioTrancy, true, true);
+        cmpAudio.mtxPivot.translateX(-2);
+        nodes[1].addComponent(cmpAudio);
+        
+        cmpAudio = new ƒ.ComponentAudio(audioMario, true, true);
+        cmpAudio.mtxPivot.translateX(0);
+        nodes[2].addComponent(cmpAudio);
+    
+        nodeControlled = nodes[0];
+    
+        ƒ.AudioManager.default.listenTo(nodes[0]);
+        //log(); */
+    }
+})(LaserLeague || (LaserLeague = {}));
 var LaserLeague;
 (function (LaserLeague) {
     var ƒ = FudgeCore;
@@ -210,23 +295,25 @@ var LaserLeague;
                         + (ƒ.Keyboard.mapToValue(1, 0, [ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT]));
                     this.ctrlRotation.setInput(rotationValue * deltaTime);
                     this.node.mtxLocal.rotateZ(this.ctrlRotation.getOutput() * speedAgentRotation);
+                    let agentRadius = this.node.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2;
+                    //let groundScale: ƒ.Vector2 = new ƒ.Vector2()
                     let currPos = this.node.mtxLocal.translation;
                     //console.log(agent.mtxLocal.translation.toString());
-                    if (this.node.mtxLocal.translation.x + this.agentDiameter / 2 > 25) {
-                        console.log("+x");
-                        this.node.mtxLocal.translation = new ƒ.Vector3(-25 + this.agentDiameter / 2, currPos.y, currPos.z);
+                    if (this.node.mtxLocal.translation.x + agentRadius > 24.5) {
+                        //console.log("+x");
+                        this.node.mtxLocal.translation = new ƒ.Vector3(-24.5 + agentRadius, currPos.y, currPos.z);
                     }
-                    if (this.node.mtxLocal.translation.x - this.agentDiameter / 2 < -25) {
-                        console.log("-x");
-                        this.node.mtxLocal.translation = new ƒ.Vector3(25 - this.agentDiameter / 2, currPos.y, currPos.z);
+                    if (this.node.mtxLocal.translation.x - agentRadius < -24.5) {
+                        //console.log("-x");
+                        this.node.mtxLocal.translation = new ƒ.Vector3(24.5 - agentRadius, currPos.y, currPos.z);
                     }
-                    if (this.node.mtxLocal.translation.y + this.agentDiameter / 2 > 15) {
-                        console.log("+y");
-                        this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x, -15 + this.agentDiameter / 2, currPos.z);
+                    if (this.node.mtxLocal.translation.y + agentRadius > 14.75) {
+                        //console.log("+y");
+                        this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x, -14.75 + agentRadius, currPos.z);
                     }
-                    if (this.node.mtxLocal.translation.y - this.agentDiameter / 2 < -15) {
-                        console.log("-y");
-                        this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x, 15 - this.agentDiameter / 2, currPos.z);
+                    if (this.node.mtxLocal.translation.y - agentRadius < -14.75) {
+                        //console.log("-y");
+                        this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x, 14.75 - agentRadius, currPos.z);
                     }
                 };
                 this.ctrForward.setDelay(200);
@@ -244,6 +331,21 @@ var LaserLeague;
         return agentComponentScript;
     })();
     LaserLeague.agentComponentScript = agentComponentScript;
+})(LaserLeague || (LaserLeague = {}));
+var LaserLeague;
+(function (LaserLeague) {
+    var ƒ = FudgeCore;
+    class GoldPoint extends ƒ.Node {
+        constructor() {
+            super("goldPoint");
+            this.addComponent(new ƒ.ComponentTransform);
+            this.addComponent(new ƒ.ComponentMesh(new ƒ.MeshQuad("MeshAgnt")));
+            this.addComponent(new ƒ.ComponentMaterial(new ƒ.Material("mtrAgent", ƒ.ShaderUniColor, new ƒ.CoatColored(new ƒ.Color(0, 1, 1, 1)))));
+            this.mtxLocal.translateZ(1);
+            //this.getComponent(ƒ.ComponentMesh).mtxPivot.scale(ƒ.Vector3.ONE(0.5));
+        }
+    }
+    LaserLeague.GoldPoint = GoldPoint;
 })(LaserLeague || (LaserLeague = {}));
 var LaserLeague;
 (function (LaserLeague) {

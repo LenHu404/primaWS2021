@@ -78,26 +78,31 @@ namespace LaserLeague {
       this.ctrlRotation.setInput(rotationValue * deltaTime);
       this.node.mtxLocal.rotateZ(this.ctrlRotation.getOutput() * speedAgentRotation);
 
+      let agentRadius: number = this.node.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x/2;
+
+
+      //let groundScale: ƒ.Vector2 = new ƒ.Vector2()
+
 
       let currPos: ƒ.Vector3 = this.node.mtxLocal.translation;
       //console.log(agent.mtxLocal.translation.toString());
 
-      if (this.node.mtxLocal.translation.x + this.agentDiameter / 2 > 25) {
-        console.log("+x");
-        this.node.mtxLocal.translation = new ƒ.Vector3(-25 + this.agentDiameter / 2, currPos.y, currPos.z);
+      if (this.node.mtxLocal.translation.x + agentRadius > 24.5) {
+        //console.log("+x");
+        this.node.mtxLocal.translation = new ƒ.Vector3(-24.5 + agentRadius, currPos.y, currPos.z);
       }
-      if (this.node.mtxLocal.translation.x - this.agentDiameter / 2 < -25) {
-        console.log("-x");
-        this.node.mtxLocal.translation = new ƒ.Vector3(25 - this.agentDiameter / 2, currPos.y, currPos.z);
+      if (this.node.mtxLocal.translation.x - agentRadius < -24.5) {
+        //console.log("-x");
+        this.node.mtxLocal.translation = new ƒ.Vector3(24.5 - agentRadius, currPos.y, currPos.z);
       }
 
-      if (this.node.mtxLocal.translation.y + this.agentDiameter / 2 > 15) {
-        console.log("+y");
-        this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x, -15 + this.agentDiameter / 2, currPos.z);
+      if (this.node.mtxLocal.translation.y + agentRadius > 14.75) {
+        //console.log("+y");
+        this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x, -14.75 + agentRadius, currPos.z);
       }
-      if (this.node.mtxLocal.translation.y - this.agentDiameter / 2 < -15) {
-        console.log("-y");
-        this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x, 15 - this.agentDiameter / 2, currPos.z);
+      if (this.node.mtxLocal.translation.y - agentRadius< -14.75) {
+        //console.log("-y");
+        this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x, 14.75 - agentRadius, currPos.z);
       }
     }
 
