@@ -112,7 +112,7 @@ namespace LaserLeague {
         if (posLocal.x <= (x) && posLocal.x >= -(x) && posLocal.y <= y && posLocal.y >= 0) {
           console.log("intersecting");
           GameState.get().health -= 0.05;
-          GameState.get().highscore -= 500;
+          //GameState.get().highscore -= 500;
           let cmpAudio: ƒ.ComponentAudio = graph.getComponents(ƒ.ComponentAudio)[1];
           cmpAudio.play(true);
 
