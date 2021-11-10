@@ -24,6 +24,7 @@ declare namespace LaserLeague {
         name: string;
         health: number;
         highscore: number;
+        gameRunning: boolean;
         private constructor();
         static get(): GameState;
         protected reduceMutator(_mutator: ƒ.Mutator): void;
@@ -51,7 +52,9 @@ declare namespace LaserLeague {
 declare namespace LaserLeague {
     import ƒ = FudgeCore;
     class GoldPoint extends ƒ.Node {
+        collected: boolean;
         constructor();
+        update: (_event: Event) => void;
     }
 }
 declare namespace LaserLeague {

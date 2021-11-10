@@ -46,7 +46,9 @@ namespace LaserLeague {
     }
 
     public update = (_event: Event) => {
-      this.movement(_event)
+      if (GameState.get().gameRunning){
+        this.movement(_event)
+      }
     }
 
     public respawn = (): void => {

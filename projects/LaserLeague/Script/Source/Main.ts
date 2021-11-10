@@ -9,14 +9,17 @@ namespace LaserLeague {
   //let laserTransform: ƒ.Matrix4x4;
   let agent: Agent;
   let graph: ƒ.Node;
-  //let goldPoint: GoldPoint;
   //let laser: ƒ.Node;
   let countLaserblocks: number = 6;
+  let countGoldPoint: number = 8;
   let laserBlocks: ƒ.Node;
+  let goldPoints: ƒ.Node;
   /* let beamWidth: number = 6;
   let beamHeight: number = 0.7;
   let agentRadius: number = 1; */
+  let arena: ƒ.Node;
   let copyLaser: ƒ.GraphInstance;
+  //let gameRunning: boolean = false;
 
 
   let ctrForward: ƒ.Control = new ƒ.Control("Forward", 1, ƒ.CONTROL_TYPE.PROPORTIONAL)
@@ -36,23 +39,21 @@ namespace LaserLeague {
     //agent = graph.getChildrenByName("Agents")[0].getChildrenByName("agent1")[0];
 
     laserBlocks = graph.getChildrenByName("Laserformations")[0];
-
-    agent = new Agent();
-    //goldPoint = new GoldPoint();
-
-    graph.getChildrenByName("Agents")[0].addChild(agent);
-
-    //graph.getChildrenByName("GoldPoints")[0].addChild(goldPoint);
-
+    goldPoints = graph.getChildrenByName("GoldPoints")[0];
+    arena = graph.getChildrenByName("Arena")[0].getChildrenByName("Ground")[0];
 
     let domName: HTMLElement = document.querySelector("#Hud>input");
-    domName.textContent = agent.name;
+
 
     addLaser(_event, graph);
+    addGolPoints();
 
     viewport.camera.mtxPivot.translateZ(-50);
 
     ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
+    agent = new Agent();
+    graph.getChildrenByName("Agents")[0].addChild(agent);
+    domName.textContent = agent.name;
     ƒ.Loop.start(ƒ.LOOP_MODE.TIME_REAL, 60);  // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
     console.log("graph: ", graph);
   }
@@ -60,16 +61,35 @@ namespace LaserLeague {
   function update(_event: Event): void {
     // ƒ.Physics.world.simulate();  // if physics is included and used
 
-    checkCollision();
+    if (GameState.get().gameRunning) {
+      checkCollision();
+      checkGoldPoints();
+      GameState.get().highscore += 1;
+      document.querySelector("#info").setAttribute("hidden","true");
+    } else if (!GameState.get().gameRunning){
+      startGame();
+      document.querySelector("#info").removeAttribute("hidden");
+    }
+
+    if (GameState.get().health <= 0) {
+      GameState.get().gameRunning = false;
+      document.querySelector("#info").removeAttribute("hidden");
+    }
 
     viewport.draw();
-    /*agent.Health -= 0.001;
-   let domHealth: HTMLInputElement = document.querySelector("input");
-   domHealth.value = agent.Health.toString(); */
 
     ƒ.AudioManager.default.update();
 
-    GameState.get().highscore += 1;
+    
+  }
+
+  function startGame(): void {
+    if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.SPACE, ƒ.KEYBOARD_CODE.ENTER])) { 
+      GameState.get().gameRunning = true;
+      GameState.get().highscore = 0;
+      GameState.get().health = 1;
+      addGolPoints();
+    }
   }
 
   async function addLaser(_event: Event, _graph: ƒ.Node) {
@@ -90,13 +110,22 @@ namespace LaserLeague {
         if (i > 0) {
           copyLaser.getComponent(laserRotatorScript).speedLaserRotate *= -1;
         }
-
       }
     }
   }
 
+  async function addGolPoints() {
+    goldPoints.removeAllChildren();
+    for (let j = 0; j < countGoldPoint; j++) {
+      let goldPoint: ƒ.Node = new GoldPoint();
+      let arenaY: number = arena.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.y / 2;
+      let arenaX: number = arena.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2;
 
+      goldPoint.mtxLocal.translation = new ƒ.Vector3(ƒ.random.getRange(-arenaX + 1, arenaX - 1), ƒ.random.getRange(-arenaY + 1, arenaY - 1), 0.1);
 
+      goldPoints.addChild(goldPoint);
+    }
+  }
 
   function checkCollision() {
     let _agent: ƒ.Node = agent.getChildren()[0];
@@ -111,12 +140,40 @@ namespace LaserLeague {
 
         if (posLocal.x <= (x) && posLocal.x >= -(x) && posLocal.y <= y && posLocal.y >= 0) {
           console.log("intersecting");
-          GameState.get().health -= 0.05;
-          //GameState.get().highscore -= 500;
+          GameState.get().health -= 0.1;
+          if (GameState.get().highscore >= 500) {
+            GameState.get().highscore -= 500;
+          } else {
+            GameState.get().highscore = 0;
+          }
+
           let cmpAudio: ƒ.ComponentAudio = graph.getComponents(ƒ.ComponentAudio)[1];
           cmpAudio.play(true);
 
           _agent.getComponent(agentComponentScript).respawn();
+        }
+      });
+    }
+  }
+
+  function checkGoldPoints() {
+    let _agent: ƒ.Node = agent.getChildren()[0];
+
+    for (let i = 0; i < goldPoints.getChildren().length; i++) {
+
+      goldPoints.getChildren().forEach(element => {
+        let goldPoint: GoldPoint = <GoldPoint>element;
+        let posLocal: ƒ.Vector3 = ƒ.Vector3.TRANSFORMATION(_agent.mtxWorld.translation, goldPoint.mtxWorldInverse, true);
+        let x = goldPoint.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2 + _agent.radius / 2;
+        let y = goldPoint.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.y + _agent.radius / 2;
+
+        if (posLocal.x <= (x) && posLocal.x >= -(x) && posLocal.y <= y && posLocal.y >= 0 && !goldPoint.collected) {
+          console.log("collected");
+          GameState.get().highscore += 600;
+          goldPoint.collected = true;
+          goldPoint.activate(false);
+          let cmpAudio: ƒ.ComponentAudio = graph.getComponents(ƒ.ComponentAudio)[2];
+          cmpAudio.play(true);
         }
       });
     }

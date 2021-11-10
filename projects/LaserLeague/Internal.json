@@ -150,6 +150,14 @@
       "type": "Audio"
     }
   },
+  "Audio|2021-11-09T20:10:05.334Z|76446": {
+    "ƒ.Audio": {
+      "url": "Sound\\UOH.mp3",
+      "idResource": "Audio|2021-11-09T20:10:05.334Z|76446",
+      "name": "sndHit.mp3",
+      "type": "Audio"
+    }
+  },
   "Graph|2021-10-14T13:02:42.894Z|75025": {
     "ƒ.Graph": {
       "name": "root",
@@ -161,7 +169,7 @@
               "idResource": "Audio|2021-11-09T14:25:35.769Z|63848",
               "playing": true,
               "loop": true,
-              "volume": 1
+              "volume": 0.3
             }
           },
           {
@@ -170,7 +178,16 @@
               "idResource": "Audio|2021-11-09T20:10:05.334Z|76446",
               "playing": false,
               "loop": false,
-              "volume": 1
+              "volume": 0.8
+            }
+          },
+          {
+            "ƒ.ComponentAudio": {
+              "active": true,
+              "idResource": "Audio|2021-11-10T23:42:35.964Z|19998",
+              "playing": false,
+              "loop": false,
+              "volume": 0.29999998211860657
             }
           }
         ],
@@ -845,11 +862,11 @@
       "type": "Audio"
     }
   },
-  "Audio|2021-11-09T20:10:05.334Z|76446": {
+  "Audio|2021-11-10T23:42:35.964Z|19998": {
     "ƒ.Audio": {
-      "url": "Sound\\UOH.mp3",
-      "idResource": "Audio|2021-11-09T20:10:05.334Z|76446",
-      "name": "sndHit.mp3",
+      "url": "Sound\\coin.mp3",
+      "idResource": "Audio|2021-11-10T23:42:35.964Z|19998",
+      "name": "coin.mp3",
       "type": "Audio"
     }
   }

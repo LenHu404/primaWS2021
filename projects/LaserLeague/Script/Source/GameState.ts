@@ -8,6 +8,7 @@ namespace LaserLeague {
         public name: string = "LaserLeague";
         public health: number = 1;
         public highscore: number = 0;
+        public gameRunning: boolean = false;
 
         private constructor() {
             super();
