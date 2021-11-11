@@ -92,21 +92,14 @@ var LaserLeague;
     ƒ.Debug.info("Main Program Template running!");
     let viewport;
     document.addEventListener("interactiveViewportStarted", start);
-    // document.addEventListener("keydown", <EventListener>start);
-    //let laserTransform: ƒ.Matrix4x4;
     let agent;
     let graph;
-    //let laser: ƒ.Node;
     let countLaserblocks = 6;
     let countGoldPoint = 8;
     let laserBlocks;
     let goldPoints;
-    /* let beamWidth: number = 6;
-    let beamHeight: number = 0.7;
-    let agentRadius: number = 1; */
     let arena;
     let copyLaser;
-    //let gameRunning: boolean = false;
     let ctrForward = new ƒ.Control("Forward", 1, 0 /* PROPORTIONAL */);
     ctrForward.setDelay(200);
     let ctrlRotation = new ƒ.Control("Rotation", 1, 0 /* PROPORTIONAL */);
@@ -212,8 +205,8 @@ var LaserLeague;
             goldPoints.getChildren().forEach(element => {
                 let goldPoint = element;
                 let posLocal = ƒ.Vector3.TRANSFORMATION(_agent.mtxWorld.translation, goldPoint.mtxWorldInverse, true);
-                let x = goldPoint.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2 + _agent.radius / 2;
-                let y = goldPoint.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.y + _agent.radius / 2;
+                let x = goldPoint.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2 + _agent.radius;
+                let y = goldPoint.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.y / 2 + _agent.radius;
                 if (posLocal.x <= (x) && posLocal.x >= -(x) && posLocal.y <= y && posLocal.y >= 0 && !goldPoint.collected) {
                     console.log("collected");
                     LaserLeague.GameState.get().highscore += 600;
@@ -225,17 +218,18 @@ var LaserLeague;
             });
         }
     }
-    /* function getcmpAudio(name: string): ƒ.ComponentAudio {
-      let cmpAudios: ƒ.ComponentAudio[] = graph.getComponents(ƒ.ComponentAudio);
-      let cmpAudio: ƒ.ComponentAudio;
-      cmpAudios.forEach(element => {
-        if (element.getAudioNode.name)
-      });
-      for (let i: number = 0; i < cmpAudios.length; i++) {
-        if ()
-      }
-      return
-   } */
+    function getcmpAudio(name) {
+        let cmpAudios = graph.getComponents(ƒ.ComponentAudio);
+        cmpAudios.forEach(element => {
+            if (element.getAudioNode.name.equals(name)) {
+                return element;
+            }
+        });
+        /* for (let i: number = 0; i < cmpAudios.length; i++) {
+          if ()
+        } */
+        return graph.getComponents(ƒ.ComponentAudio)[1];
+    }
 })(LaserLeague || (LaserLeague = {}));
 /* function checkCollisionALT(): void {
     let _agent: ƒ.Node = agent.getChildren()[0];

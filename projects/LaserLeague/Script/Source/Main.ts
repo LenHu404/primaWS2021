@@ -4,22 +4,15 @@ namespace LaserLeague {
 
   let viewport: ƒ.Viewport;
   document.addEventListener("interactiveViewportStarted", <any>start);
-  // document.addEventListener("keydown", <EventListener>start);
 
-  //let laserTransform: ƒ.Matrix4x4;
   let agent: Agent;
   let graph: ƒ.Node;
-  //let laser: ƒ.Node;
   let countLaserblocks: number = 6;
   let countGoldPoint: number = 8;
   let laserBlocks: ƒ.Node;
   let goldPoints: ƒ.Node;
-  /* let beamWidth: number = 6;
-  let beamHeight: number = 0.7;
-  let agentRadius: number = 1; */
   let arena: ƒ.Node;
   let copyLaser: ƒ.GraphInstance;
-  //let gameRunning: boolean = false;
 
 
   let ctrForward: ƒ.Control = new ƒ.Control("Forward", 1, ƒ.CONTROL_TYPE.PROPORTIONAL)
@@ -77,10 +70,7 @@ namespace LaserLeague {
     }
 
     viewport.draw();
-
     ƒ.AudioManager.default.update();
-
-    
   }
 
   function startGame(): void {
@@ -164,8 +154,8 @@ namespace LaserLeague {
       goldPoints.getChildren().forEach(element => {
         let goldPoint: GoldPoint = <GoldPoint>element;
         let posLocal: ƒ.Vector3 = ƒ.Vector3.TRANSFORMATION(_agent.mtxWorld.translation, goldPoint.mtxWorldInverse, true);
-        let x = goldPoint.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2 + _agent.radius / 2;
-        let y = goldPoint.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.y + _agent.radius / 2;
+        let x = goldPoint.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x/2+ _agent.radius;
+        let y = goldPoint.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.y/2 + _agent.radius;
 
         if (posLocal.x <= (x) && posLocal.x >= -(x) && posLocal.y <= y && posLocal.y >= 0 && !goldPoint.collected) {
           console.log("collected");
@@ -179,17 +169,19 @@ namespace LaserLeague {
     }
   }
 
-  /* function getcmpAudio(name: string): ƒ.ComponentAudio {
+  function getcmpAudio(name: string): ƒ.ComponentAudio {
     let cmpAudios: ƒ.ComponentAudio[] = graph.getComponents(ƒ.ComponentAudio);
-    let cmpAudio: ƒ.ComponentAudio;
+    
     cmpAudios.forEach(element => {
-      if (element.getAudioNode.name)
+      if (element.getAudioNode.name.equals(name)){
+        return element;
+      }
     });
-    for (let i: number = 0; i < cmpAudios.length; i++) {
+    /* for (let i: number = 0; i < cmpAudios.length; i++) {
       if ()
-    }
-    return  
- } */
+    } */
+    return graph.getComponents(ƒ.ComponentAudio)[1];
+ }
 
 }
 
