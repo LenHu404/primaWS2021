@@ -171,17 +171,14 @@ namespace LaserLeague {
 
   function getcmpAudio(name: string): ƒ.ComponentAudio {
     let cmpAudios: ƒ.ComponentAudio[] = graph.getComponents(ƒ.ComponentAudio);
-    
+
     cmpAudios.forEach(element => {
-      if (element.getAudioNode.name.equals(name)){
+      if (element.getAudio().name.equals(name)){
         return element;
       }
     });
-    /* for (let i: number = 0; i < cmpAudios.length; i++) {
-      if ()
-    } */
     return graph.getComponents(ƒ.ComponentAudio)[1];
- }
+ } 
 
 }
 
