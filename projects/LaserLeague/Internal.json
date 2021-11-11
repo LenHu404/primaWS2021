@@ -138,7 +138,7 @@
     "ƒ.Audio": {
       "url": "Sound\\trancyvania.mp3",
       "idResource": "Audio|2021-11-09T14:25:35.769Z|63848",
-      "name": "sndAtmo.mp3",
+      "name": "sndAtmo",
       "type": "Audio"
     }
   },
@@ -154,7 +154,15 @@
     "ƒ.Audio": {
       "url": "Sound\\UOH.mp3",
       "idResource": "Audio|2021-11-09T20:10:05.334Z|76446",
-      "name": "sndHit.mp3",
+      "name": "sndHit",
+      "type": "Audio"
+    }
+  },
+  "Audio|2021-11-10T23:42:35.964Z|19998": {
+    "ƒ.Audio": {
+      "url": "Sound\\coin.mp3",
+      "idResource": "Audio|2021-11-10T23:42:35.964Z|19998",
+      "name": "sndGoldcoin",
       "type": "Audio"
     }
   },
@@ -169,7 +177,7 @@
               "idResource": "Audio|2021-11-09T14:25:35.769Z|63848",
               "playing": false,
               "loop": true,
-              "volume": 0.3
+              "volume": 0.30000001192092896
             }
           },
           {
@@ -178,7 +186,7 @@
               "idResource": "Audio|2021-11-09T20:10:05.334Z|76446",
               "playing": false,
               "loop": false,
-              "volume": 0.8
+              "volume": 0.800000011920929
             }
           },
           {
@@ -188,6 +196,15 @@
               "playing": false,
               "loop": false,
               "volume": 0.29999998211860657
+            }
+          },
+          {
+            "ƒ.ComponentAudio": {
+              "active": true,
+              "idResource": "Audio|2021-11-11T23:20:08.814Z|59428",
+              "playing": false,
+              "loop": true,
+              "volume": 0.4
             }
           }
         ],
@@ -862,11 +879,11 @@
       "type": "Audio"
     }
   },
-  "Audio|2021-11-10T23:42:35.964Z|19998": {
+  "Audio|2021-11-11T23:20:08.814Z|59428": {
     "ƒ.Audio": {
-      "url": "Sound\\coin.mp3",
-      "idResource": "Audio|2021-11-10T23:42:35.964Z|19998",
-      "name": "coin.mp3",
+      "url": "Sound\\hypnotic.mp3",
+      "idResource": "Audio|2021-11-11T23:20:08.814Z|59428",
+      "name": "sndAtmo2",
       "type": "Audio"
     }
   }

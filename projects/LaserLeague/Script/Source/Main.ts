@@ -23,6 +23,7 @@ namespace LaserLeague {
   //let speedAgentTranslation: number = 10; // meters per second
 
   function start(_event: CustomEvent): void {
+    //document.addEventListener("click", hndClick);
     viewport = _event.detail;
 
 
@@ -49,6 +50,10 @@ namespace LaserLeague {
     domName.textContent = agent.name;
     ƒ.Loop.start(ƒ.LOOP_MODE.TIME_REAL, 60);  // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
     console.log("graph: ", graph);
+
+    let cmpAudio: ƒ.ComponentAudio = getcmpAudio("sndAtmo2");
+    cmpAudio.play(true);
+
   }
 
   function update(_event: Event): void {
@@ -58,8 +63,8 @@ namespace LaserLeague {
       checkCollision();
       checkGoldPoints();
       GameState.get().highscore += 1;
-      document.querySelector("#info").setAttribute("hidden","true");
-    } else if (!GameState.get().gameRunning){
+      document.querySelector("#info").setAttribute("hidden", "true");
+    } else if (!GameState.get().gameRunning) {
       startGame();
       document.querySelector("#info").removeAttribute("hidden");
     }
@@ -73,8 +78,13 @@ namespace LaserLeague {
     ƒ.AudioManager.default.update();
   }
 
+  /* function hndClick(_event: MouseEvent): void {
+    console.log("Click");
+    agent.dispatchEvent()
+  } */
+
   function startGame(): void {
-    if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.SPACE, ƒ.KEYBOARD_CODE.ENTER])) { 
+    if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.SPACE, ƒ.KEYBOARD_CODE.ENTER])) {
       GameState.get().gameRunning = true;
       GameState.get().highscore = 0;
       GameState.get().health = 1;
@@ -137,7 +147,7 @@ namespace LaserLeague {
             GameState.get().highscore = 0;
           }
 
-          let cmpAudio: ƒ.ComponentAudio = graph.getComponents(ƒ.ComponentAudio)[1];
+          let cmpAudio: ƒ.ComponentAudio = getcmpAudio("sndHit");
           cmpAudio.play(true);
 
           _agent.getComponent(agentComponentScript).respawn();
@@ -154,15 +164,15 @@ namespace LaserLeague {
       goldPoints.getChildren().forEach(element => {
         let goldPoint: GoldPoint = <GoldPoint>element;
         let posLocal: ƒ.Vector3 = ƒ.Vector3.TRANSFORMATION(_agent.mtxWorld.translation, goldPoint.mtxWorldInverse, true);
-        let x = goldPoint.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x/2+ _agent.radius;
-        let y = goldPoint.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.y/2 + _agent.radius;
+        let x = goldPoint.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2 + _agent.radius;
+        let y = goldPoint.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.y / 2 + _agent.radius;
 
         if (posLocal.x <= (x) && posLocal.x >= -(x) && posLocal.y <= y && posLocal.y >= 0 && !goldPoint.collected) {
           console.log("collected");
           GameState.get().highscore += 600;
           goldPoint.collected = true;
           goldPoint.activate(false);
-          let cmpAudio: ƒ.ComponentAudio = graph.getComponents(ƒ.ComponentAudio)[2];
+          let cmpAudio: ƒ.ComponentAudio = getcmpAudio("sndGoldcoin");
           cmpAudio.play(true);
         }
       });
@@ -171,14 +181,13 @@ namespace LaserLeague {
 
   function getcmpAudio(name: string): ƒ.ComponentAudio {
     let cmpAudios: ƒ.ComponentAudio[] = graph.getComponents(ƒ.ComponentAudio);
-
-    cmpAudios.forEach(element => {
-      if (element.getAudio().name.equals(name)){
-        return element;
+    for (let index = 0; index < cmpAudios.length; index++) {
+      if (cmpAudios[index].getAudio().name == name) {
+        return graph.getComponents(ƒ.ComponentAudio)[index];
       }
-    });
+    }
     return graph.getComponents(ƒ.ComponentAudio)[1];
- } 
+  }
 
 }
 

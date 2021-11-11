@@ -106,6 +106,7 @@ var LaserLeague;
     ctrlRotation.setDelay(50);
     //let speedAgentTranslation: number = 10; // meters per second
     function start(_event) {
+        //document.addEventListener("click", hndClick);
         viewport = _event.detail;
         graph = viewport.getBranch();
         //agent = graph.getChildrenByName("Agents")[0].getChildrenByName("agent1")[0];
@@ -122,6 +123,8 @@ var LaserLeague;
         domName.textContent = agent.name;
         ƒ.Loop.start(ƒ.LOOP_MODE.TIME_REAL, 60); // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
         console.log("graph: ", graph);
+        let cmpAudio = getcmpAudio("sndAtmo2");
+        cmpAudio.play(true);
     }
     function update(_event) {
         // ƒ.Physics.world.simulate();  // if physics is included and used
@@ -142,6 +145,10 @@ var LaserLeague;
         viewport.draw();
         ƒ.AudioManager.default.update();
     }
+    /* function hndClick(_event: MouseEvent): void {
+      console.log("Click");
+      agent.dispatchEvent()
+    } */
     function startGame() {
         if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.SPACE, ƒ.KEYBOARD_CODE.ENTER])) {
             LaserLeague.GameState.get().gameRunning = true;
@@ -192,7 +199,7 @@ var LaserLeague;
                     else {
                         LaserLeague.GameState.get().highscore = 0;
                     }
-                    let cmpAudio = graph.getComponents(ƒ.ComponentAudio)[1];
+                    let cmpAudio = getcmpAudio("sndHit");
                     cmpAudio.play(true);
                     _agent.getComponent(LaserLeague.agentComponentScript).respawn();
                 }
@@ -212,7 +219,7 @@ var LaserLeague;
                     LaserLeague.GameState.get().highscore += 600;
                     goldPoint.collected = true;
                     goldPoint.activate(false);
-                    let cmpAudio = graph.getComponents(ƒ.ComponentAudio)[2];
+                    let cmpAudio = getcmpAudio("sndGoldcoin");
                     cmpAudio.play(true);
                 }
             });
@@ -220,14 +227,11 @@ var LaserLeague;
     }
     function getcmpAudio(name) {
         let cmpAudios = graph.getComponents(ƒ.ComponentAudio);
-        cmpAudios.forEach(element => {
-            if (element.getAudioNode.name.equals(name)) {
-                return element;
+        for (let index = 0; index < cmpAudios.length; index++) {
+            if (cmpAudios[index].getAudio().name == name) {
+                return graph.getComponents(ƒ.ComponentAudio)[index];
             }
-        });
-        /* for (let i: number = 0; i < cmpAudios.length; i++) {
-          if ()
-        } */
+        }
         return graph.getComponents(ƒ.ComponentAudio)[1];
     }
 })(LaserLeague || (LaserLeague = {}));
