@@ -62,13 +62,11 @@ var Script;
         cart = graph.getChildrenByName("CartNode")[0].getChildrenByName("Cart")[0];
         cartNode = graph.getChildrenByName("CartNode")[0];
         minimapNode = graph.getChildrenByName("minimap")[0];
-        cmpCamera.mtxPivot.rotateX(-100);
-        cmpCamera.mtxPivot.rotateY(180);
-        cmpCamera.mtxPivot.rotateZ(-180);
-        //cmpCamera.mtxPivot.translateZ(0);
-        cmpCamera.mtxPivot.translateY(100);
-        //cmpCamera.mtxPivot.translateX(0);
-        graph.addComponent(cmpCamera);
+        cartNode.mtxLocal.translation = new ƒ.Vector3(-14.699, 3.0000, -33.458);
+        cartNode.mtxLocal.rotation = new ƒ.Vector3(0, -90, 0);
+        cmpCamera.mtxPivot.translation = new ƒ.Vector3(0, 8, -12);
+        cmpCamera.mtxPivot.rotation = new ƒ.Vector3(25, 0, 0);
+        cartNode.addComponent(cmpCamera);
         let canvas = document.querySelector("canvas");
         viewport = new ƒ.Viewport();
         viewport.initialize("Viewport", graph, cmpCamera, canvas);
@@ -91,10 +89,10 @@ var Script;
     }
     function update(_event) {
         // ƒ.Physics.world.simulate();  // if physics is included and used
-        //console.log("trans", cmpCamera.mtxPivot.translation.toString());
+        //console.log("trans", cartNode.mtxLocal.translation.toString());
         //console.log("rot ", cmpCamera.mtxPivot.rotation.toString());
-        cmpCamera.mtxPivot.translation = new ƒ.Vector3(cart.mtxWorld.translation.x, cmpCamera.mtxPivot.translation.y, cart.mtxWorld.translation.z);
-        cmpCamera.mtxPivot.rotation = new ƒ.Vector3(cmpCamera.mtxPivot.rotation.x, cart.mtxWorld.rotation.y, cmpCamera.mtxPivot.rotation.z);
+        //cmpCamera.mtxPivot.translation = new ƒ.Vector3(cart.mtxWorld.translation.x, cmpCamera.mtxPivot.translation.y, cart.mtxWorld.translation.z );
+        //cmpCamera.mtxPivot.rotation = new ƒ.Vector3(cmpCamera.mtxPivot.rotation.x, cart.mtxWorld.rotation.y, cmpCamera.mtxPivot.rotation.z );
         //cmpCameraMinimap.mtxPivot.translation =  cmpCamera.mtxPivot.translation;
         //cmpCameraMinimap.mtxPivot.rotation = cmpCamera.mtxPivot.rotation;
         //cmpCameraMinimap.mtxPivot.translation = new ƒ.Vector3(cart.mtxWorld.translation.x, cmpCameraMinimap.mtxPivot.translation.y, cart.mtxWorld.translation.z );
