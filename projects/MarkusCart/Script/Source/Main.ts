@@ -3,7 +3,19 @@ namespace Script {
   ƒ.Debug.info("Main Program Template running!")
 
   let viewport: ƒ.Viewport;
+  let viewportMinimap: ƒ.Viewport;
+  let graph: any;
   let cart: ƒ.Node;
+  let cartNode: ƒ.Node;
+  let minimapNode: ƒ.Node;
+  let mtxTerrain: ƒ.Matrix4x4;
+  let meshTerrain: ƒ.MeshTerrain;
+
+  let cmpCamera = new ƒ.ComponentCamera();
+  let cmpCameraMinimap = new ƒ.ComponentCamera();
+
+  let carSpeed: number = 3;
+  let carTurn: number = 2.5;
 
   let ctrForward: ƒ.Control = new ƒ.Control("Forward", 10, ƒ.CONTROL_TYPE.PROPORTIONAL);
   ctrForward.setDelay(200);
@@ -11,57 +23,99 @@ namespace Script {
   ctrForward.setDelay(50);
 
 
-  document.addEventListener("interactiveViewportStarted", <any>start);
+  window.addEventListener("load", start);
 
-  let map: ƒ.Node = new ƒ.Node("RaceTrack");
+  async function start(_event: Event): Promise<void> {
 
-  async function start(_event: CustomEvent): Promise<void> {
-    viewport = _event.detail;
-    viewport.calculateTransforms();
+    await ƒ.Project.loadResourcesFromHTML();
+    graph = ƒ.Project.resources["Graph|2021-11-18T14:34:07.958Z|41539"];
 
-    let graph: ƒ.Node = viewport.getBranch();
-    cart = viewport.getBranch().getChildrenByName("Cart")[0];
 
-    //let cmpRigidbody: ƒ.ComponentRigidbody = new ƒ.ComponentRigidbody(1, ƒ.BODY_TYPE.STATIC, ƒ.COLLIDER_TYPE.CUBE);
+    cart = graph.getChildrenByName("CartNode")[0].getChildrenByName("Cart")[0];
+    cartNode = graph.getChildrenByName("CartNode")[0];
+    minimapNode = graph.getChildrenByName("minimap")[0];
 
-    let heightMap = new ƒ.TextureImage();
-    await heightMap.load("../Texture/map.png");
+    
+    cmpCamera.mtxPivot.rotateX(-100);
+    cmpCamera.mtxPivot.rotateY(180);
+    cmpCamera.mtxPivot.rotateZ(-180);
+    //cmpCamera.mtxPivot.translateZ(0);
+    cmpCamera.mtxPivot.translateY(100);
+    //cmpCamera.mtxPivot.translateX(0);
 
-    let mtrTexFlat: ƒ.Material = <ƒ.Material>ƒ.Project.resources["Material|2021-11-23T13:24:15.410Z|41994"];
-    let material = new ƒ.ComponentMaterial(mtrTexFlat);
-    let gridMeshFlat: ƒ.MeshTerrain = new ƒ.MeshRelief("HeightMap", heightMap);
-    let grid = new ƒ.ComponentMesh(gridMeshFlat);
-    let transform = new ƒ.ComponentTransform();
+    graph.addComponent(cmpCamera);
 
-    grid.mtxPivot.scale(new ƒ.Vector3(100, 10, 100));
+    let canvas: HTMLCanvasElement = document.querySelector("canvas");
+    viewport = new ƒ.Viewport();
+    viewport.initialize("Viewport", graph, cmpCamera, canvas);
+
+    cmpCameraMinimap.mtxPivot.translation = new ƒ.Vector3(0,120,0);
+    cmpCameraMinimap.mtxPivot.rotation = new ƒ.Vector3(90,180,0);
     
 
-    map.addComponent(grid);
-    map.addComponent(material);
-    map.addComponent(transform);
+    minimapNode.addComponent(cmpCameraMinimap);
 
-    graph.addChild(map);
+
+    let canvasMinimap: HTMLCanvasElement = document.querySelector("#minimap");
+    viewportMinimap = new ƒ.Viewport();
+    viewportMinimap.initialize("Viewport", graph, cmpCameraMinimap, canvasMinimap);
+
+    viewportMinimap.calculateTransforms();
+    viewport.calculateTransforms();
+
+
+    ƒ.AudioManager.default.listenTo(graph);
+    ƒ.AudioManager.default.listenWith(graph.getComponent(ƒ.ComponentAudioListener));
+
+
+    let cmpMeshTerrain: ƒ.ComponentMesh = graph.getChildrenByName("Terrain")[0].getComponent(ƒ.ComponentMesh);
+    meshTerrain = <ƒ.MeshTerrain>cmpMeshTerrain.mesh;
+    mtxTerrain = cmpMeshTerrain.mtxWorld;
+
+
+    
 
 
     ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
-     ƒ.Loop.start(ƒ.LOOP_MODE.TIME_REAL, 60);  // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
+    ƒ.Loop.start(ƒ.LOOP_MODE.TIME_REAL, 60);  // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
+    console.log("graph: ", graph);
+
   }
 
   function update(_event: Event): void {
     // ƒ.Physics.world.simulate();  // if physics is included and used
+    //console.log("trans", cmpCamera.mtxPivot.translation.toString());
+    //console.log("rot ", cmpCamera.mtxPivot.rotation.toString());
+
+    cmpCamera.mtxPivot.translation = new ƒ.Vector3(cart.mtxWorld.translation.x, cmpCamera.mtxPivot.translation.y, cart.mtxWorld.translation.z );
+    cmpCamera.mtxPivot.rotation = new ƒ.Vector3(cmpCamera.mtxPivot.rotation.x, cart.mtxWorld.rotation.y, cmpCamera.mtxPivot.rotation.z );
+
+    //cmpCameraMinimap.mtxPivot.translation =  cmpCamera.mtxPivot.translation;
+    //cmpCameraMinimap.mtxPivot.rotation = cmpCamera.mtxPivot.rotation;
+
+    //cmpCameraMinimap.mtxPivot.translation = new ƒ.Vector3(cart.mtxWorld.translation.x, cmpCameraMinimap.mtxPivot.translation.y, cart.mtxWorld.translation.z );
+    //cmpCameraMinimap.mtxPivot.rotation = new ƒ.Vector3(cmpCameraMinimap.mtxPivot.rotation.x, cart.mtxWorld.rotation.y, cmpCameraMinimap.mtxPivot.rotation.z );
+    //wacmpCamera.mtxPivot.translateZ(-80);
+
 
     let deltaTime: number = ƒ.Loop.timeFrameReal / 1000;
 
     let turn: number = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT], [ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]);
-    ctrTurn.setInput(turn * deltaTime);
-    cart.mtxLocal.rotateY(ctrTurn.getOutput());
+    ctrTurn.setInput(turn * carTurn * deltaTime);
+    cartNode.mtxLocal.rotateY(ctrTurn.getOutput());
 
     let forward: number = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP], [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]);
-    ctrForward.setInput(forward * deltaTime);
-    cart.mtxLocal.translateZ(ctrForward.getOutput());
+    ctrForward.setInput(forward * carSpeed * deltaTime);
+    cartNode.mtxLocal.translateZ(ctrForward.getOutput());
+
+    let terrainInfo: ƒ.TerrainInfo = meshTerrain.getTerrainInfo(cartNode.mtxLocal.translation, mtxTerrain);
+    cartNode.mtxLocal.translation = terrainInfo.position;
+    cartNode.mtxLocal.showTo(ƒ.Vector3.SUM(terrainInfo.position, cartNode.mtxLocal.getZ()), terrainInfo.normal);
 
 
+    viewportMinimap.draw();
     viewport.draw();
+
     ƒ.AudioManager.default.update();
   }
 }
