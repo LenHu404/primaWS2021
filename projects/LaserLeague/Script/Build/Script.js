@@ -93,6 +93,7 @@ var LaserLeague;
     let viewport;
     document.addEventListener("interactiveViewportStarted", start);
     let agent;
+    //let root: ƒ.Node;
     let graph;
     let countLaserblocks = 6;
     let countGoldPoint = 8;
@@ -105,10 +106,21 @@ var LaserLeague;
     let ctrlRotation = new ƒ.Control("Rotation", 1, 0 /* PROPORTIONAL */);
     ctrlRotation.setDelay(50);
     //let speedAgentTranslation: number = 10; // meters per second
-    function start(_event) {
+    window.addEventListener("load", start);
+    async function start(_event) {
         //document.addEventListener("click", hndClick);
-        viewport = _event.detail;
-        graph = viewport.getBranch();
+        await ƒ.Project.loadResourcesFromHTML();
+        graph = ƒ.Project.resources["Graph|2021-10-14T13:02:42.894Z|75025"];
+        let cmpCamera = new ƒ.ComponentCamera();
+        cmpCamera.mtxPivot.rotateY(180);
+        cmpCamera.mtxPivot.translateZ(-2);
+        graph.addComponent(cmpCamera);
+        let canvas = document.querySelector("canvas");
+        viewport = new ƒ.Viewport();
+        viewport.initialize("Viewport", graph, cmpCamera, canvas);
+        //root = viewport.getBranch();
+        ƒ.AudioManager.default.listenTo(graph);
+        ƒ.AudioManager.default.listenWith(graph.getComponent(ƒ.ComponentAudioListener));
         //agent = graph.getChildrenByName("Agents")[0].getChildrenByName("agent1")[0];
         laserBlocks = graph.getChildrenByName("Laserformations")[0];
         goldPoints = graph.getChildrenByName("GoldPoints")[0];
@@ -124,7 +136,7 @@ var LaserLeague;
         ƒ.Loop.start(ƒ.LOOP_MODE.TIME_REAL, 60); // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
         console.log("graph: ", graph);
         let cmpAudio = getcmpAudio("sndAtmo2");
-        cmpAudio.play(true);
+        cmpAudio.play(false);
     }
     function update(_event) {
         // ƒ.Physics.world.simulate();  // if physics is included and used
@@ -226,12 +238,25 @@ var LaserLeague;
         }
     }
     function getcmpAudio(name) {
-        let cmpAudios = graph.getComponents(ƒ.ComponentAudio);
-        for (let index = 0; index < cmpAudios.length; index++) {
-            if (cmpAudios[index].getAudio().name == name) {
-                return graph.getComponents(ƒ.ComponentAudio)[index];
-            }
+        switch (name) {
+            case "sndGoldcoin":
+                return graph.getComponents(ƒ.ComponentAudio)[2];
+                break;
+            case "sndAtmo2":
+                return graph.getComponents(ƒ.ComponentAudio)[3];
+                break;
+            case "sndHit":
+                return graph.getComponents(ƒ.ComponentAudio)[1];
+                break;
+            default:
+                break;
         }
+        /* let cmpAudios: ƒ.ComponentAudio[] = graph.getComponents(ƒ.ComponentAudio);
+        for (let index = 0; index < cmpAudios.length; index++) {
+          if (cmpAudios[index].getAudio().name == name) {
+            return graph.getComponents(ƒ.ComponentAudio)[index];
+          }
+        } */
         return graph.getComponents(ƒ.ComponentAudio)[1];
     }
 })(LaserLeague || (LaserLeague = {}));

@@ -6,7 +6,8 @@ namespace LaserLeague {
   document.addEventListener("interactiveViewportStarted", <any>start);
 
   let agent: Agent;
-  let graph: ƒ.Node;
+  //let root: ƒ.Node;
+  let graph: any;
   let countLaserblocks: number = 6;
   let countGoldPoint: number = 8;
   let laserBlocks: ƒ.Node;
@@ -21,14 +22,27 @@ namespace LaserLeague {
   ctrlRotation.setDelay(50);
 
   //let speedAgentTranslation: number = 10; // meters per second
+  window.addEventListener("load", start);
 
-  function start(_event: CustomEvent): void {
+
+  async function start(_event: Event): Promise<void> {
     //document.addEventListener("click", hndClick);
-    viewport = _event.detail;
 
+    await ƒ.Project.loadResourcesFromHTML();
+    graph = ƒ.Project.resources["Graph|2021-10-14T13:02:42.894Z|75025"];
 
-    graph = viewport.getBranch();
+    let cmpCamera = new ƒ.ComponentCamera();
+    cmpCamera.mtxPivot.rotateY(180);
+    cmpCamera.mtxPivot.translateZ(-2);
+    graph.addComponent(cmpCamera);
 
+    let canvas: HTMLCanvasElement = document.querySelector("canvas");
+    viewport = new ƒ.Viewport();
+    viewport.initialize("Viewport", graph, cmpCamera, canvas);
+
+    //root = viewport.getBranch();
+    ƒ.AudioManager.default.listenTo(graph);
+    ƒ.AudioManager.default.listenWith(graph.getComponent(ƒ.ComponentAudioListener));
 
     //agent = graph.getChildrenByName("Agents")[0].getChildrenByName("agent1")[0];
 
@@ -52,7 +66,7 @@ namespace LaserLeague {
     console.log("graph: ", graph);
 
     let cmpAudio: ƒ.ComponentAudio = getcmpAudio("sndAtmo2");
-    cmpAudio.play(true);
+    cmpAudio.play(false);
 
   }
 
@@ -180,12 +194,27 @@ namespace LaserLeague {
   }
 
   function getcmpAudio(name: string): ƒ.ComponentAudio {
-    let cmpAudios: ƒ.ComponentAudio[] = graph.getComponents(ƒ.ComponentAudio);
+    
+    switch (name) {
+      case "sndGoldcoin":
+        return graph.getComponents(ƒ.ComponentAudio)[2];
+        break;
+      case "sndAtmo2":
+        return graph.getComponents(ƒ.ComponentAudio)[3];
+        break;
+      case "sndHit":
+        return graph.getComponents(ƒ.ComponentAudio)[1];
+        break;
+
+      default:
+        break;
+    }
+    /* let cmpAudios: ƒ.ComponentAudio[] = graph.getComponents(ƒ.ComponentAudio);
     for (let index = 0; index < cmpAudios.length; index++) {
       if (cmpAudios[index].getAudio().name == name) {
         return graph.getComponents(ƒ.ComponentAudio)[index];
       }
-    }
+    } */
     return graph.getComponents(ƒ.ComponentAudio)[1];
   }
 

@@ -118,6 +118,21 @@ namespace FudgeCore {
         ]);
       return mtxResult;
     }
+    
+    /**
+     * Computes and returns the transpose of a passed matrix.
+     */
+    public static TRANSPOSE(_mtx: Matrix4x4): Matrix4x4 {
+      let m: Float32Array = _mtx.data;
+      let result: Matrix4x4 = Recycler.get(Matrix4x4);
+      result.data.set([
+        m[0], m[4], m[8], m[12],
+        m[1], m[5], m[9], m[13],
+        m[2], m[6], m[10], m[14],
+        m[3], m[7], m[11], m[15]
+      ]);
+      return result;
+    }
 
     /**
      * Computes and returns the inverse of a passed matrix.
@@ -680,25 +695,28 @@ namespace FudgeCore {
      * Add a scaling along the x-axis by the given amount to this matrix 
      */
     public scaleX(_by: number): void {
-      let vector: Vector3 = Recycler.borrow(Vector3);
+      let vector: Vector3 = Recycler.get(Vector3);
       vector.set(_by, 1, 1);
       this.scale(vector);
+      Recycler.store(vector);
     }
     /**
      * Add a scaling along the y-axis by the given amount to this matrix 
      */
     public scaleY(_by: number): void {
-      let vector: Vector3 = Recycler.borrow(Vector3);
+      let vector: Vector3 = Recycler.get(Vector3);
       vector.set(1, _by, 1);
       this.scale(vector);
+      Recycler.store(vector);
     }
     /**
      * Add a scaling along the z-axis by the given amount to this matrix 
      */
     public scaleZ(_by: number): void {
-      let vector: Vector3 = Recycler.borrow(Vector3);
+      let vector: Vector3 = Recycler.get(Vector3);
       vector.set(1, 1, _by);
       this.scale(vector);
+      Recycler.store(vector);
     }
     //#endregion
 
