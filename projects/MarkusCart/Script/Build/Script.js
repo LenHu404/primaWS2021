@@ -60,6 +60,7 @@ var Script;
         await ƒ.Project.loadResourcesFromHTML();
         graph = ƒ.Project.resources["Graph|2021-11-18T14:34:07.958Z|41539"];
         cart = graph.getChildrenByName("CartNode")[0].getChildrenByName("Cart")[0];
+        cart.mtxLocal.translateY(0.5);
         cartNode = graph.getChildrenByName("CartNode")[0];
         minimapNode = graph.getChildrenByName("minimap")[0];
         cartNode.mtxLocal.translation = new ƒ.Vector3(-16, 3.0000, -34.5);
@@ -89,7 +90,7 @@ var Script;
     }
     function update(_event) {
         // ƒ.Physics.world.simulate();  // if physics is included and used
-        console.log("trans", cartNode.mtxLocal.translation.toString());
+        //console.log("trans", cartNode.mtxLocal.translation.toString());
         //console.log("rot ", cmpCamera.mtxPivot.rotation.toString());
         //cmpCamera.mtxPivot.translation = new ƒ.Vector3(cart.mtxWorld.translation.x, cmpCamera.mtxPivot.translation.y, cart.mtxWorld.translation.z );
         //cmpCamera.mtxPivot.rotation = new ƒ.Vector3(cmpCamera.mtxPivot.rotation.x, cart.mtxWorld.rotation.y, cmpCamera.mtxPivot.rotation.z );

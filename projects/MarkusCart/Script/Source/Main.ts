@@ -32,6 +32,7 @@ namespace Script {
 
 
     cart = graph.getChildrenByName("CartNode")[0].getChildrenByName("Cart")[0];
+    cart.mtxLocal.translateY(0.5);
     cartNode = graph.getChildrenByName("CartNode")[0];
     minimapNode = graph.getChildrenByName("minimap")[0];
 
@@ -82,7 +83,7 @@ namespace Script {
 
   function update(_event: Event): void {
     // ƒ.Physics.world.simulate();  // if physics is included and used
-    console.log("trans", cartNode.mtxLocal.translation.toString());
+    //console.log("trans", cartNode.mtxLocal.translation.toString());
     //console.log("rot ", cmpCamera.mtxPivot.rotation.toString());
   
     //cmpCamera.mtxPivot.translation = new ƒ.Vector3(cart.mtxWorld.translation.x, cmpCamera.mtxPivot.translation.y, cart.mtxWorld.translation.z );
