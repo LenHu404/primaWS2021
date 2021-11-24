@@ -62,7 +62,7 @@ var Script;
         cart = graph.getChildrenByName("CartNode")[0].getChildrenByName("Cart")[0];
         cartNode = graph.getChildrenByName("CartNode")[0];
         minimapNode = graph.getChildrenByName("minimap")[0];
-        cartNode.mtxLocal.translation = new ƒ.Vector3(-14.699, 3.0000, -33.458);
+        cartNode.mtxLocal.translation = new ƒ.Vector3(-16, 3.0000, -34.5);
         cartNode.mtxLocal.rotation = new ƒ.Vector3(0, -90, 0);
         cmpCamera.mtxPivot.translation = new ƒ.Vector3(0, 8, -12);
         cmpCamera.mtxPivot.rotation = new ƒ.Vector3(25, 0, 0);
@@ -89,7 +89,7 @@ var Script;
     }
     function update(_event) {
         // ƒ.Physics.world.simulate();  // if physics is included and used
-        //console.log("trans", cartNode.mtxLocal.translation.toString());
+        console.log("trans", cartNode.mtxLocal.translation.toString());
         //console.log("rot ", cmpCamera.mtxPivot.rotation.toString());
         //cmpCamera.mtxPivot.translation = new ƒ.Vector3(cart.mtxWorld.translation.x, cmpCamera.mtxPivot.translation.y, cart.mtxWorld.translation.z );
         //cmpCamera.mtxPivot.rotation = new ƒ.Vector3(cmpCamera.mtxPivot.rotation.x, cart.mtxWorld.rotation.y, cmpCamera.mtxPivot.rotation.z );
