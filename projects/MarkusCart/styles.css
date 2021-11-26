@@ -24,3 +24,61 @@ canvas#minimap {
   border-radius: 15px;
   border: 6px solid rgb(0, 0, 0) ;
 }
+
+div#Hud {
+  position: absolute;
+  top: 0px;
+  color: rgb(100, 255, 203);
+  background-color: rgba(2, 22, 32, 0.5);
+  font-family: fantasy;
+  font-size: 22px;
+  padding: 10pt;
+  border-bottom-right-radius: 10pt;
+}
+
+input[type=text] {
+  border: none;
+  font-family: fantasy;
+  font-size: 32px;
+  color: rgb(93, 212, 172);
+}
+
+input[type=string] {
+  border: none;
+  font-family: fantasy;
+  font-size: 25px;
+  color: rgb(206, 15, 15);
+  background-color: black;
+  text-align: right;
+  margin-top: 6px;
+}
+
+input[type=number] {
+  border: none;
+  font-family: fantasy;
+  font-size: 25px;
+  color: rgb(77, 211, 0);
+  background-color: black;
+  text-align: right;
+  margin-top: 6px;
+}
+
+input[type=range]::-webkit-slider-runnable-track {
+  height: 16px;
+  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+  background: #034e0d;
+  border-radius: 5px;
+  border: 0.2px solid #06b46c;
+}
+
+#info {
+  position: absolute;
+  top: 40%;
+  left: 26%;
+  font-family: fantasy;
+  font-size: 50px;
+  background-color: rgb(56, 56, 56);
+  color: rgb(93, 212, 172);
+  padding: 30px;
+  text-align: center;
+}
