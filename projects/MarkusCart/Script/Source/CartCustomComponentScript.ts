@@ -126,16 +126,18 @@ namespace Script {
 
       let speed :number = this.ctrForward.getOutput().valueOf();
 
-      GameState.get().speed = speed.toFixed(2) + " m/s";
+      
 
-      speed = this.map_range(speed, 0, 0.85, 0, 270);
+      let speedTacho = this.map_range(speed, 0, 0.85, 0, 270);
 
       
 
       if (speed > 0) {
-        document.getElementById("needle").style.transform = "rotate(" + (-speed + 45)+ "deg)";
+        document.getElementById("needle").style.transform = "rotate(" + (-speedTacho + 45)+ "deg)";
+        GameState.get().speed = speed.toFixed(2) + " m/s";
       } else {
-        document.getElementById("needle").style.transform = "rotate(" + (speed + 45)+ "deg)";
+        document.getElementById("needle").style.transform = "rotate(" + (speedTacho + 45)+ "deg)";
+        GameState.get().speed = -speed.toFixed(2) + " m/s";
       }
       
     }
