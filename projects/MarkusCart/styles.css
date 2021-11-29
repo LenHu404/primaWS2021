@@ -25,7 +25,7 @@ canvas#minimap {
   border: 6px solid rgb(0, 0, 0) ;
 }
 
-div#Hud {
+div#topBar {
   position: absolute;
   top: 0px;
   color: rgb(100, 255, 203);
@@ -41,9 +41,10 @@ input[type=text] {
   font-family: fantasy;
   font-size: 32px;
   color: rgb(93, 212, 172);
+
 }
 
-input[type=string] {
+#topBar>input[type=string] {
   border: none;
   font-family: fantasy;
   font-size: 25px;
@@ -51,9 +52,10 @@ input[type=string] {
   background-color: black;
   text-align: right;
   margin-top: 6px;
+  margin: 10px;
 }
 
-input[type=number] {
+#topBar>input[type=number] {
   border: none;
   font-family: fantasy;
   font-size: 25px;
@@ -61,6 +63,8 @@ input[type=number] {
   background-color: black;
   text-align: right;
   margin-top: 6px;
+  margin: 10px;
+
 }
 
 input[type=range]::-webkit-slider-runnable-track {
@@ -82,3 +86,39 @@ input[type=range]::-webkit-slider-runnable-track {
   padding: 30px;
   text-align: center;
 }
+
+#speedometer{
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  width: 15vw;
+  height: 15vw;
+  border-radius: 50%;
+}
+
+#tacho {
+  width: 225px;
+  height: 225px;
+}
+
+#needle {
+  position: absolute;
+  top: 95px;
+  left: -25px;
+  width: 275px;
+  transform: rotate(45deg);
+}
+#speedometer>input {
+  position: absolute;
+  top: 150px;
+  left: 66px;
+  border: none;
+  font-family: monospace;
+  font-size: 20px;
+  color: rgb(206, 15, 15);
+  background-color: black;
+  text-align: right;
+  
+  width: 90px;
+}
+

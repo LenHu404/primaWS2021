@@ -124,6 +124,24 @@ namespace Script {
       this.ctrForward.setInput(forward * deltaTime);
       this.node.mtxLocal.translateZ(this.ctrForward.getOutput());
 
+      let speed :number = this.ctrForward.getOutput().valueOf();
+
+      GameState.get().speed = speed.toFixed(2) + " m/s";
+
+      speed = this.map_range(speed, 0, 0.85, 0, 270);
+
+      
+
+      if (speed > 0) {
+        document.getElementById("needle").style.transform = "rotate(" + (-speed + 45)+ "deg)";
+      } else {
+        document.getElementById("needle").style.transform = "rotate(" + (speed + 45)+ "deg)";
+      }
+      
+    }
+
+    public map_range (v: number, from_min: number, from_max:number, to_min: number, to_max: number): number {
+      return to_min + (v - from_min) * (to_max - to_min) / (from_max - from_min);
     }
 
     // protected reduceMutator(_mutator: ƒ.Mutator): void {

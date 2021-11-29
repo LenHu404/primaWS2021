@@ -11,6 +11,7 @@ namespace Script {
         public laptimeString: string = "";
         public laps: number = 0;
         public gameRunning: boolean = false;
+        public speed: string = "0 m/s";
 
         private constructor() {
             super();

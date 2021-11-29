@@ -91,6 +91,15 @@ var Script;
                     let forward = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP], [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]);
                     this.ctrForward.setInput(forward * deltaTime);
                     this.node.mtxLocal.translateZ(this.ctrForward.getOutput());
+                    let speed = this.ctrForward.getOutput().valueOf();
+                    Script.GameState.get().speed = speed.toFixed(2) + " m/s";
+                    speed = this.map_range(speed, 0, 0.85, 0, 270);
+                    if (speed > 0) {
+                        document.getElementById("needle").style.transform = "rotate(" + (-speed + 45) + "deg)";
+                    }
+                    else {
+                        document.getElementById("needle").style.transform = "rotate(" + (speed + 45) + "deg)";
+                    }
                 };
                 this.ctrForward = new ƒ.Control("Forward", 50, 0 /* PROPORTIONAL */);
                 this.ctrForward.setDelay(1000);
@@ -102,6 +111,9 @@ var Script;
                 // Listen to this component being added to or removed from a node
                 this.addEventListener("componentAdd" /* COMPONENT_ADD */, this.hndEvent);
                 this.addEventListener("componentRemove" /* COMPONENT_REMOVE */, this.hndEvent);
+            }
+            map_range(v, from_min, from_max, to_min, to_max) {
+                return to_min + (v - from_min) * (to_max - to_min) / (from_max - from_min);
             }
         }
         // Register the script as component for use in the editor via drag&drop
@@ -159,6 +171,7 @@ var Script;
             this.laptimeString = "";
             this.laps = 0;
             this.gameRunning = false;
+            this.speed = "0 m/s";
             let domHud = document.querySelector("#Hud");
             GameState.instance = this;
             GameState.controller = new ƒui.Controller(this, domHud);

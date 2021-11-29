@@ -14,6 +14,7 @@ declare namespace Script {
         reset: () => void;
         resetLight: (cpNumber: number) => void;
         cartControlls: (_event: Event) => void;
+        map_range(v: number, from_min: number, from_max: number, to_min: number, to_max: number): number;
     }
 }
 declare namespace Script {
@@ -36,6 +37,7 @@ declare namespace Script {
         laptimeString: string;
         laps: number;
         gameRunning: boolean;
+        speed: string;
         private constructor();
         static get(): GameState;
         protected reduceMutator(_mutator: ƒ.Mutator): void;
