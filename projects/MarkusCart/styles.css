@@ -89,10 +89,10 @@ input[type=range]::-webkit-slider-runnable-track {
 
 #speedometer{
   position: absolute;
-  bottom: 10px;
-  right: 10px;
-  width: 15vw;
-  height: 15vw;
+  bottom: 0px;
+  right: 0px;
+  width: 250px;
+  height: 250px;
   border-radius: 50%;
 }
 

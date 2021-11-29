@@ -128,7 +128,7 @@ namespace Script {
 
       
 
-      let speedTacho = this.map_range(speed, 0, 0.85, 0, 270);
+      let speedTacho = this.map_range(speed, 0, 2.5, 0, 270);
 
       
 
