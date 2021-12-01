@@ -38,6 +38,8 @@ declare namespace Script {
         laps: number;
         gameRunning: boolean;
         speed: string;
+        lapRunning: boolean;
+        startTime: ƒ.Time;
         private constructor();
         static get(): GameState;
         protected reduceMutator(_mutator: ƒ.Mutator): void;

@@ -26,7 +26,11 @@ var Script;
                     }
                 };
                 this.update = (_event) => {
-                    this.cartControlls(_event);
+                    if (Script.GameState.get().gameRunning) {
+                        this.cartControlls(_event);
+                    }
+                    /* let collider: ƒ.ComponentRigidbody = this.node.getComponent(ƒ.ComponentRigidbody)
+                    collider.checkCollisionEvents(); */
                 };
                 this.reset = () => {
                     this.node.mtxLocal.translation = new ƒ.Vector3(-16, 3.0000, -34.5);
@@ -173,6 +177,7 @@ var Script;
             this.laps = 0;
             this.gameRunning = false;
             this.speed = "0 m/s";
+            this.lapRunning = false;
             let domHud = document.querySelector("#Hud");
             GameState.instance = this;
             GameState.controller = new ƒui.Controller(this, domHud);
@@ -217,10 +222,13 @@ var Script;
         cartNode = graph.getChildrenByName("CartNode")[0];
         minimapNode = graph.getChildrenByName("minimap")[0];
         checkpoints = graph.getChildrenByName("Terrain")[0].getChildrenByName("Checkpoints")[0];
-        cartNode.getComponent(Script.CartCustomComponentScript).cpArray = new Array(checkpoints.nChildren).fill(true);
+        cartNode.getComponent(Script.CartCustomComponentScript).cpArray = new Array(checkpoints.nChildren).fill(false);
         console.log("array ", cartNode.getComponent(Script.CartCustomComponentScript).cpArray);
         cartNode.mtxLocal.translation = new ƒ.Vector3(-16, 3.0000, -34.5);
         cartNode.mtxLocal.rotation = new ƒ.Vector3(0, -90, 0);
+        //checkpoints.getChildren().forEach(element => {
+        cartNode.getComponent(ƒ.ComponentRigidbody).addEventListener("ColliderEnteredCollision" /* COLLISION_ENTER */, hndCollision);
+        //});
         cmpCamera.mtxPivot.translation = new ƒ.Vector3(0, 8, -12);
         cmpCamera.mtxPivot.rotation = new ƒ.Vector3(25, 0, 0);
         cameraNode.addComponent(cmpCamera);
@@ -237,6 +245,7 @@ var Script;
         viewportMinimap.initialize("Viewport", graph, cmpCameraMinimap, canvasMinimap);
         viewportMinimap.calculateTransforms();
         viewport.calculateTransforms();
+        ƒ.Physics.adjustTransforms(graph);
         ƒ.AudioManager.default.listenTo(graph);
         ƒ.AudioManager.default.listenWith(graph.getComponent(ƒ.ComponentAudioListener));
         let cmpMeshTerrain = graph.getChildrenByName("Terrain")[0].getComponent(ƒ.ComponentMesh);
@@ -247,6 +256,7 @@ var Script;
         console.log("graph: ", graph);
     }
     function update(_event) {
+        ƒ.Physics.world.simulate(Math.min(0.1, ƒ.Loop.timeFrameReal / 1000));
         // ƒ.Physics.world.simulate();  // if physics is included and used
         //console.log("trans", cartNode.mtxLocal.translation.toString());
         //console.log("rot ", cmpCamera.mtxPivot.rotation.toString());
@@ -254,14 +264,22 @@ var Script;
         //cameraNode.mtxLocal.rotation = new ƒ.Vector3(0, cart.mtxWorld.rotation.y, 0);
         placeCameraOnCart();
         placeCartOnTerrain();
-        for (let index = 0; index < checkpoints.nChildren; index++) {
-            checkCollision(cartNode, checkpoints.getChildren()[index]);
-            //console.log("name ", checkpoints.getChildren()[index]);
+        if (Script.GameState.get().gameRunning) {
+            //graph.addEventListener("collision", hndCollision)
+            //cartNode.getComponent(ƒ.ComponentRigidbody).addEventListener(ƒ.EVENT_PHYSICS.COLLISION_ENTER, hndCollision)
+            //collider.checkCollisionEvents();
+            document.querySelector("#info").setAttribute("hidden", "true");
         }
-        Script.GameState.get().laptime += 1;
+        else if (!Script.GameState.get().gameRunning) {
+            startGame();
+            document.querySelector("#info").removeAttribute("hidden");
+        }
+        if (Script.GameState.get().lapRunning) {
+            Script.GameState.get().laptime += 1;
+        }
         //ƒ.Time.
         Script.GameState.get().laptimeString = toHHMMSSMSMS(Script.GameState.get().laptime);
-        if (!Script.GameState.get().gameRunning) {
+        if (!Script.GameState.get().lapRunning) {
             Script.GameState.get().laptimeString = "-- : -- : -- : --";
         }
         let counter = 0;
@@ -270,7 +288,7 @@ var Script;
                 counter++;
             }
         }
-        if (counter == cartNode.getComponent(Script.CartCustomComponentScript).cpArray.length) {
+        if (counter == 7) {
             Script.GameState.get().laps++;
             cartNode.getComponent(Script.CartCustomComponentScript).cpArray.fill(false);
             console.log("Laptime: ", Script.GameState.get().laptimeString);
@@ -280,6 +298,14 @@ var Script;
         viewportMinimap.draw();
         viewport.draw();
         ƒ.AudioManager.default.update();
+    }
+    /* function passedTime(startTime: ƒ.Time): number {
+      let passedTime = ƒ.Time - startTime;
+    } */
+    function startGame() {
+        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.SPACE, ƒ.KEYBOARD_CODE.ENTER])) {
+            Script.GameState.get().gameRunning = true;
+        }
     }
     function toHHMMSSMSMS(time) {
         let ms_num = time;
@@ -352,50 +378,57 @@ var Script;
    
      }
    */
-    function checkCollision(collider, obstacle) {
-        let distance = ƒ.Vector3.TRANSFORMATION(collider.mtxWorld.translation, obstacle.mtxWorldInverse, true);
-        let minX = obstacle.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2 + collider.radius;
-        let minY = obstacle.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.y + collider.radius;
-        if (distance.x <= (minX) && distance.x >= -(minX) && distance.y <= minY && distance.y >= 0) {
-            console.log("passed by", obstacle.name);
-            let index = 0;
-            switch (obstacle.name) {
-                case "CP1":
-                    index = 0;
-                    break;
-                case "CP2":
-                    index = 1;
-                    break;
-                case "CP3":
-                    index = 2;
-                    break;
-                case "CP4":
-                    index = 3;
-                    break;
-                case "CP5":
-                    index = 4;
-                    break;
-                case "CP6":
-                    index = 5;
-                    break;
-                case "startCP":
-                    index = 6;
-                    if (!cartNode.getComponent(Script.CartCustomComponentScript).cpArray[0]) {
-                        Script.GameState.get().gameRunning = true;
-                        Script.GameState.get().laptime = 0;
-                    }
-                    break;
-                default:
-                    break;
-            }
-            if (cartNode.getComponent(Script.CartCustomComponentScript).cpArray[index - 1]) {
-                cartNode.getComponent(Script.CartCustomComponentScript).cpArray[0] = true;
-            }
-            else {
-                console.log("Skipped CP: " + (index));
-                cartNode.getComponent(Script.CartCustomComponentScript).resetLight(index);
-            }
+    function hndCollision(_event) {
+        let cp = _event.cmpRigidbody.node;
+        console.log("passed by", cp.name);
+        let index = 0;
+        switch (cp.name) {
+            case "CP1":
+                index = 0;
+                break;
+            case "CP2":
+                index = 1;
+                break;
+            case "CP3":
+                index = 2;
+                break;
+            case "CP4":
+                index = 3;
+                break;
+            case "CP5":
+                index = 4;
+                break;
+            case "CP6":
+                index = 5;
+                break;
+            case "startCP":
+                index = 6;
+                break;
+            default:
+                break;
         }
+        let counter = 0;
+        cartNode.getComponent(Script.CartCustomComponentScript).cpArray.forEach(element => {
+            if (element)
+                counter++;
+        });
+        if (index == 6 && counter == 0) {
+            console.log();
+            Script.GameState.get().lapRunning = true;
+            Script.GameState.get().laptime = 0;
+            //cartNode.getComponent(CartCustomComponentScript).cpArray[index] = false;
+        }
+        else {
+            cartNode.getComponent(Script.CartCustomComponentScript).cpArray[index] = true;
+        }
+        /* if (cartNode.getComponent(CartCustomComponentScript).cpArray[index - 1] && index != 5) {
+          cartNode.getComponent(CartCustomComponentScript).cpArray[index] = true;
+        }
+        else {
+          console.log("Skipped CP: " + cp.name + ", Index; " + (index - 1));
+          cartNode.getComponent(CartCustomComponentScript).resetLight(index);
+    
+        } */
     }
     function placeCameraOnCart() {
         cameraNode.mtxLocal.mutate({

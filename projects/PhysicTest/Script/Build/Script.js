@@ -43,14 +43,22 @@ var Script;
     let graph;
     let ground;
     let ball;
+    let ballRb;
     let cmpBall;
     document.addEventListener("interactiveViewportStarted", start);
+    let ctrForward;
+    let ctrTurn;
     function start(_event) {
         viewport = _event.detail;
         graph = viewport.getBranch();
         ƒ.Physics.adjustTransforms(graph);
         ground = graph.getChildrenByName("Ground")[0];
         ball = graph.getChildrenByName("Ball")[0];
+        ballRb = ball.getComponent(ƒ.ComponentRigidbody);
+        ctrForward = new ƒ.Control("Forward", 10, 0 /* PROPORTIONAL */);
+        ctrForward.setDelay(1000);
+        ctrTurn = new ƒ.Control("Turn", 10, 0 /* PROPORTIONAL */);
+        ctrTurn.setDelay(80);
         /*  ground.addComponent(new ƒ.ComponentRigidbody(1, ƒ.BODY_TYPE.STATIC, ƒ.COLLIDER_TYPE.CUBE, ƒ.COLLISION_GROUP.GROUP_1));
      
          //ball.addComponent(new ƒ.ComponentRigidbody(1, ƒ.BODY_TYPE.KINEMATIC, ƒ.COLLIDER_TYPE.SPHERE, ƒ.COLLISION_GROUP.GROUP_1));
@@ -63,6 +71,13 @@ var Script;
     }
     function update(_event) {
         ƒ.Physics.world.simulate(Math.min(0.1, ƒ.Loop.timeFrameReal / 1000)); // if physics is included and used
+        // let deltaTime: number = ƒ.Loop.timeFrameReal / 1000;
+        let turn = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT], [ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]);
+        ctrTurn.setInput(turn);
+        ballRb.applyTorque(ƒ.Vector3.SCALE(ƒ.Vector3.Y(), ctrTurn.getOutput()));
+        let forward = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP], [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]);
+        ctrForward.setInput(forward);
+        ballRb.applyForce(ƒ.Vector3.SCALE(ball.mtxLocal.getZ(), ctrForward.getOutput()));
         viewport.draw();
         ƒ.AudioManager.default.update();
     }

@@ -41,10 +41,15 @@ namespace Script {
     minimapNode = graph.getChildrenByName("minimap")[0];
     checkpoints = graph.getChildrenByName("Terrain")[0].getChildrenByName("Checkpoints")[0];
 
-    cartNode.getComponent(CartCustomComponentScript).cpArray = new Array<boolean>(checkpoints.nChildren).fill(true);
+    cartNode.getComponent(CartCustomComponentScript).cpArray = new Array<boolean>(checkpoints.nChildren).fill(false);
     console.log("array ", cartNode.getComponent(CartCustomComponentScript).cpArray);
     cartNode.mtxLocal.translation = new ƒ.Vector3(-16, 3.0000, -34.5);
     cartNode.mtxLocal.rotation = new ƒ.Vector3(0, -90, 0);
+
+    //checkpoints.getChildren().forEach(element => {
+    cartNode.getComponent(ƒ.ComponentRigidbody).addEventListener(ƒ.EVENT_PHYSICS.COLLISION_ENTER, hndCollision)
+    //});
+
 
     cmpCamera.mtxPivot.translation = new ƒ.Vector3(0, 8, -12);
     cmpCamera.mtxPivot.rotation = new ƒ.Vector3(25, 0, 0);
@@ -58,7 +63,6 @@ namespace Script {
     viewport.initialize("Viewport", graph, cmpCamera, canvas);
 
 
-
     cmpCameraMinimap.mtxPivot.translation = new ƒ.Vector3(0, 120, 0);
     cmpCameraMinimap.mtxPivot.rotation = new ƒ.Vector3(90, 180, 0);
     minimapNode.addComponent(cmpCameraMinimap);
@@ -68,11 +72,10 @@ namespace Script {
     viewportMinimap.initialize("Viewport", graph, cmpCameraMinimap, canvasMinimap);
 
 
-
     viewportMinimap.calculateTransforms();
     viewport.calculateTransforms();
 
-
+    ƒ.Physics.adjustTransforms(graph);
     ƒ.AudioManager.default.listenTo(graph);
     ƒ.AudioManager.default.listenWith(graph.getComponent(ƒ.ComponentAudioListener));
 
@@ -82,7 +85,6 @@ namespace Script {
     mtxTerrain = cmpMeshTerrain.mtxWorld;
 
 
-
     ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
     ƒ.Loop.start(ƒ.LOOP_MODE.TIME_REAL, 60);  // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
     console.log("graph: ", graph);
@@ -90,6 +92,7 @@ namespace Script {
   }
 
   function update(_event: Event): void {
+    ƒ.Physics.world.simulate(Math.min(0.1, ƒ.Loop.timeFrameReal / 1000));
     // ƒ.Physics.world.simulate();  // if physics is included and used
     //console.log("trans", cartNode.mtxLocal.translation.toString());
     //console.log("rot ", cmpCamera.mtxPivot.rotation.toString());
@@ -100,47 +103,53 @@ namespace Script {
     placeCartOnTerrain();
 
 
+    if (GameState.get().gameRunning) {
+      //graph.addEventListener("collision", hndCollision)
+      //cartNode.getComponent(ƒ.ComponentRigidbody).addEventListener(ƒ.EVENT_PHYSICS.COLLISION_ENTER, hndCollision)
+      //collider.checkCollisionEvents();
 
-
-
-    for (let index = 0; index < checkpoints.nChildren; index++) {
-      checkCollision(cartNode, checkpoints.getChildren()[index]);
-      //console.log("name ", checkpoints.getChildren()[index]);
+      document.querySelector("#info").setAttribute("hidden", "true");
+    } else if (!GameState.get().gameRunning) {
+      startGame();
+      document.querySelector("#info").removeAttribute("hidden");
+    }
+    if (GameState.get().lapRunning) {
+      GameState.get().laptime += 1;
     }
 
-
-
-
-
-
-    GameState.get().laptime += 1;
     //ƒ.Time.
     GameState.get().laptimeString = toHHMMSSMSMS(GameState.get().laptime);
-    if (!GameState.get().gameRunning) {
+    if (!GameState.get().lapRunning) {
       GameState.get().laptimeString = "-- : -- : -- : --";
     }
     let counter: number = 0;
-
     for (let i = 0; i < cartNode.getComponent(CartCustomComponentScript).cpArray.length; i++) {
       if (cartNode.getComponent(CartCustomComponentScript).cpArray[i]) {
         counter++;
-      }      
+      }
     }
-
-    if (counter == cartNode.getComponent(CartCustomComponentScript).cpArray.length) {
+    if (counter == 7) {
       GameState.get().laps++;
       cartNode.getComponent(CartCustomComponentScript).cpArray.fill(false);
-      console.log("Laptime: ",GameState.get().laptimeString);
+      console.log("Laptime: ", GameState.get().laptimeString);
       GameState.get().laptime = 0;
     }
 
-    GameState.get().lapprogress = counter/7;
-
-
+    GameState.get().lapprogress = counter / 7;
 
     viewportMinimap.draw();
     viewport.draw();
     ƒ.AudioManager.default.update();
+  }
+
+  /* function passedTime(startTime: ƒ.Time): number {
+    let passedTime = ƒ.Time - startTime; 
+  } */
+
+  function startGame(): void {
+    if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.SPACE, ƒ.KEYBOARD_CODE.ENTER])) {
+      GameState.get().gameRunning = true;
+    }
   }
 
   function toHHMMSSMSMS(time: number): string {
@@ -212,55 +221,67 @@ namespace Script {
    }
  */
 
-  function checkCollision(collider: ƒ.Node, obstacle: ƒ.Node) {
-    let distance: ƒ.Vector3 = ƒ.Vector3.TRANSFORMATION(collider.mtxWorld.translation, obstacle.mtxWorldInverse, true);
-    let minX = obstacle.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2 + collider.radius;
-    let minY = obstacle.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.y + collider.radius;
+  function hndCollision(_event: ƒ.EventPhysics) {
+    let cp: ƒ.Node = _event.cmpRigidbody.node;
 
-    if (distance.x <= (minX) && distance.x >= -(minX) && distance.y <= minY && distance.y >= 0) {
-      console.log("passed by", obstacle.name);
-      let index: number = 0;
 
-      switch (obstacle.name) {
-        case "CP1":
-          index = 0;
-          break;
-        case "CP2":
-          index = 1;
-          break;
-        case "CP3":
-          index = 2;
-          break;
-        case "CP4":
-          index = 3;
-          break;
-        case "CP5":
-          index = 4;
-          break;
-        case "CP6":
-          index = 5;
-          break;
-        case "startCP":
-          index = 6;
-          if (!cartNode.getComponent(CartCustomComponentScript).cpArray[0]) {
-            GameState.get().gameRunning = true;
-            GameState.get().laptime = 0;
-          }
-          break;
-        default:
-          break;
-      }
+    console.log("passed by", cp.name);
+    let index: number = 0;
 
-      if (cartNode.getComponent(CartCustomComponentScript).cpArray[index - 1]) {
-        cartNode.getComponent(CartCustomComponentScript).cpArray[0] = true;
-      }
-      else {
-        console.log("Skipped CP: " + (index));
-        cartNode.getComponent(CartCustomComponentScript).resetLight(index);
-       
-      }
-
+    switch (cp.name) {
+      case "CP1":
+        index = 0;
+        break;
+      case "CP2":
+        index = 1;
+        break;
+      case "CP3":
+        index = 2;
+        break;
+      case "CP4":
+        index = 3;
+        break;
+      case "CP5":
+        index = 4;
+        break;
+      case "CP6":
+        index = 5;
+        break;
+      case "startCP":
+        index = 6;
+        break;
+      default:
+        break;
     }
+
+
+    let counter: number = 0
+
+    cartNode.getComponent(CartCustomComponentScript).cpArray.forEach(element => {
+      if (element) counter++;
+    });
+
+    if ( index == 6 && counter == 0) {
+      console.log();
+      GameState.get().lapRunning = true;
+      GameState.get().laptime = 0;
+      //cartNode.getComponent(CartCustomComponentScript).cpArray[index] = false;
+    } else {
+      cartNode.getComponent(CartCustomComponentScript).cpArray[index] = true;
+    }
+
+    
+
+    /* if (cartNode.getComponent(CartCustomComponentScript).cpArray[index - 1] && index != 5) {
+      cartNode.getComponent(CartCustomComponentScript).cpArray[index] = true;
+    }
+    else {
+      console.log("Skipped CP: " + cp.name + ", Index; " + (index - 1));
+      cartNode.getComponent(CartCustomComponentScript).resetLight(index);
+
+    } */
+
+
   }
 
 

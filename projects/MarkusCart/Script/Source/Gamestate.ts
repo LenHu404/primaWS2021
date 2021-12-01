@@ -12,6 +12,8 @@ namespace Script {
         public laps: number = 0;
         public gameRunning: boolean = false;
         public speed: string = "0 m/s";
+        public lapRunning: boolean = false;
+        public startTime: ƒ.Time;
 
         private constructor() {
             super();

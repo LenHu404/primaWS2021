@@ -50,9 +50,11 @@ namespace Script {
     }
 
     public update = (_event: Event) => {
-
-      this.cartControlls(_event)
-
+      if (GameState.get().gameRunning){
+        this.cartControlls(_event)
+      }
+      /* let collider: ƒ.ComponentRigidbody = this.node.getComponent(ƒ.ComponentRigidbody)
+      collider.checkCollisionEvents(); */
     }
 
     public reset = (): void => {
