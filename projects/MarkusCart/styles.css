@@ -50,9 +50,10 @@ input[type=text] {
   font-size: 25px;
   color: rgb(206, 15, 15);
   background-color: black;
-  text-align: right;
+  text-align: center;
   margin-top: 6px;
   margin: 10px;
+  width: 125px;
 }
 
 #topBar>input[type=number] {

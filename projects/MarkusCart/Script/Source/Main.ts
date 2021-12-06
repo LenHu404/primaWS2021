@@ -7,10 +7,14 @@ namespace Script {
   let graph: ƒ.Graph;
   let cart: ƒ.Node;
   let cartNode: ƒ.Node;
+  let cartRb: ƒ.ComponentRigidbody;
+  let cartBody: ƒ.Node;
   let minimapNode: ƒ.Node;
   let checkpoints: ƒ.Node;
   let mtxTerrain: ƒ.Matrix4x4;
   let meshTerrain: ƒ.MeshTerrain;
+
+  let cartMaxSpeed: number = 80;
   //let runningLap: boolean = false;
 
   let cameraNode: ƒ.Node = new ƒ.Node("cameraNode");
@@ -21,9 +25,9 @@ namespace Script {
   /* let carSpeed: number = 3;
   let carTurn: number = 2.5; */
 
-  let ctrForward: ƒ.Control = new ƒ.Control("Forward", 50, ƒ.CONTROL_TYPE.PROPORTIONAL);
+  let ctrForward = new ƒ.Control("Forward", 10, ƒ.CONTROL_TYPE.PROPORTIONAL);
   ctrForward.setDelay(1000);
-  let ctrTurn: ƒ.Control = new ƒ.Control("Turn", 100, ƒ.CONTROL_TYPE.PROPORTIONAL);
+  let ctrTurn = new ƒ.Control("Turn", 10, ƒ.CONTROL_TYPE.PROPORTIONAL);
   ctrTurn.setDelay(80);
 
 
@@ -37,9 +41,11 @@ namespace Script {
 
     cart = graph.getChildrenByName("CartNode")[0].getChildrenByName("Cart")[0];
     cart.mtxLocal.translateY(0.5);
+    cartBody = cart.getChildrenByName("Body")[0];
     cartNode = graph.getChildrenByName("CartNode")[0];
     minimapNode = graph.getChildrenByName("minimap")[0];
     checkpoints = graph.getChildrenByName("Terrain")[0].getChildrenByName("Checkpoints")[0];
+    cartRb = cartNode.getComponent(ƒ.ComponentRigidbody);
 
     cartNode.getComponent(CartCustomComponentScript).cpArray = new Array<boolean>(checkpoints.nChildren).fill(false);
     console.log("array ", cartNode.getComponent(CartCustomComponentScript).cpArray);
@@ -92,21 +98,23 @@ namespace Script {
   }
 
   function update(_event: Event): void {
-    ƒ.Physics.world.simulate(Math.min(0.1, ƒ.Loop.timeFrameReal / 1000));
-    // ƒ.Physics.world.simulate();  // if physics is included and used
-    //console.log("trans", cartNode.mtxLocal.translation.toString());
-    //console.log("rot ", cmpCamera.mtxPivot.rotation.toString());
-
-    //cameraNode.mtxLocal.translation = cart.mtxWorld.translation;
-    //cameraNode.mtxLocal.rotation = new ƒ.Vector3(0, cart.mtxWorld.rotation.y, 0);
+    cartStbilizer();
     placeCameraOnCart();
-    placeCartOnTerrain();
+    hudConstrolls();
+    
+
+
+
+
+    ƒ.Physics.world.simulate(Math.min(0.1, ƒ.Loop.timeFrameReal / 1000));
+    
+    
+
 
 
     if (GameState.get().gameRunning) {
-      //graph.addEventListener("collision", hndCollision)
-      //cartNode.getComponent(ƒ.ComponentRigidbody).addEventListener(ƒ.EVENT_PHYSICS.COLLISION_ENTER, hndCollision)
-      //collider.checkCollisionEvents();
+      
+      cartControlls();
 
       document.querySelector("#info").setAttribute("hidden", "true");
     } else if (!GameState.get().gameRunning) {
@@ -117,6 +125,22 @@ namespace Script {
       GameState.get().laptime += 1;
     }
 
+    
+
+    viewportMinimap.draw();
+    viewport.draw();
+    ƒ.AudioManager.default.update();
+  }
+
+  function map_range(v: number, from_min: number, from_max: number, to_min: number, to_max: number): number {
+    return to_min + (v - from_min) * (to_max - to_min) / (from_max - from_min);
+  }
+
+  /* function passedTime(startTime: ƒ.Time): number {
+    let passedTime = ƒ.Time - startTime; 
+  } */
+
+  function hudConstrolls(): void {
     //ƒ.Time.
     GameState.get().laptimeString = toHHMMSSMSMS(GameState.get().laptime);
     if (!GameState.get().lapRunning) {
@@ -136,15 +160,74 @@ namespace Script {
     }
 
     GameState.get().lapprogress = counter / 7;
-
-    viewportMinimap.draw();
-    viewport.draw();
-    ƒ.AudioManager.default.update();
   }
 
-  /* function passedTime(startTime: ƒ.Time): number {
-    let passedTime = ƒ.Time - startTime; 
-  } */
+  function cartStbilizer():void {
+    let maxHeight: number = 0.3;
+    let minHieght: number = 0.2;
+    let wheelNodes: ƒ.Node[] = cartBody.getChildren();
+    let force: ƒ.Vector3 = ƒ.Vector3.SCALE(ƒ.Physics.world.getGravity(), -cartRb.mass / wheelNodes.length);
+
+    for (let wheelNode of wheelNodes) {
+      let posWheel: ƒ.Vector3 = wheelNode.getComponent(ƒ.ComponentMesh).mtxWorld.translation;
+      let terrainInfo: ƒ.TerrainInfo = meshTerrain.getTerrainInfo(posWheel, mtxTerrain);
+      let height: number = posWheel.y - terrainInfo.position.y;
+
+      cartRb.applyForceAtPoint(ƒ.Vector3.SCALE(force, 1 / height), posWheel);
+    }
+
+  }
+
+  function cartStbilizerV2():void {
+    let maxHeight: number = 0.3;
+    let minHeight: number = 0.2;
+    let wheelNodes: ƒ.Node[] = cartBody.getChildren();
+    let force: ƒ.Vector3 = ƒ.Vector3.SCALE(ƒ.Physics.world.getGravity(), -cartRb.mass / wheelNodes.length);
+
+    for (let wheelNode of wheelNodes) {
+      let posWheel: ƒ.Vector3 = wheelNode.getComponent(ƒ.ComponentMesh).mtxWorld.translation;
+      let terrainInfo: ƒ.TerrainInfo = meshTerrain.getTerrainInfo(posWheel, mtxTerrain);
+      let height: number = posWheel.y - terrainInfo.position.y;
+
+      let forceScale: number = map_range(1/height,1/minHeight, 1/maxHeight, 0,4);
+      console.log(forceScale);
+
+      cartRb.applyForceAtPoint(ƒ.Vector3.SCALE(force, forceScale), posWheel);
+    }
+
+  }
+
+  function cartControlls():void {
+  
+    let forward: number = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP], [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]);
+    ctrForward.setInput(forward);
+    cartRb.applyForce(ƒ.Vector3.SCALE(cartNode.mtxLocal.getZ(), ctrForward.getOutput() * cartRb.mass * 40));
+
+
+
+    let speed: number = ctrForward.getOutput() * cartRb.mass * 30 / 1000;
+
+    let speedTacho = map_range(speed, 0, cartMaxSpeed, 0, 270);
+
+    if (speed > 0) {
+      document.getElementById("needle").style.transform = "rotate(" + (-speedTacho + 45) + "deg)";
+      GameState.get().speed = speed.toFixed(2) + " km/h";
+    } else {
+      document.getElementById("needle").style.transform = "rotate(" + (speedTacho + 45) + "deg)";
+      GameState.get().speed = -speed.toFixed(2) + " km/h";
+    }
+
+
+    let turn: number = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT], [ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]);
+
+    ctrTurn.setInput(turn);
+
+    if (ctrForward.getOutput() < 0) {
+      cartRb.applyTorque(ƒ.Vector3.SCALE(ƒ.Vector3.Y(), -ctrTurn.getOutput() * 2));
+    } else {
+      cartRb.applyTorque(ƒ.Vector3.SCALE(ƒ.Vector3.Y(), ctrTurn.getOutput() * 2));
+    }
+  }
 
   function startGame(): void {
     if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.SPACE, ƒ.KEYBOARD_CODE.ENTER])) {
@@ -173,53 +256,6 @@ namespace Script {
     return hoursSt + ':' + minutesSt + ':' + secondsSt + ':' + milliSecondsSt;
   }
 
-  /* function checkCollision() {
-     for (let index = 0; index < checkpoints.nChildren; index++) {
-       let cp: ƒ.Node = checkpoints.getChildren()[index];
-       let posLocal: ƒ.Vector3 = ƒ.Vector3.TRANSFORMATION(cartNode.mtxWorld.translation, cp.mtxWorldInverse, true);
-       let x = cp.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2 + cartNode.radius;
-       let y = cp.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.y / 2 + cartNode.radius;
- 
-       if (posLocal.x <= (x) && posLocal.x >= -(x) && posLocal.y <= y && posLocal.y >= 0) {
-         console.log("intersecting", cp.name);
-         GameState.get().lapprogress -= 0.1;
-         if (GameState.get().laptime >= 500) {
-           GameState.get().laptime -= 500;
-         } else {
-           GameState.get().laptime = 0;
-         }
- 
-         /*  let cmpAudio: ƒ.ComponentAudio = getcmpAudio("sndHit");
-         cmpAudio.play(true);
- 
-         cartNode.getComponent(agentComponentScript).respawn(); 
-       }
-       
-     }
-      checkpoints.getChildren().forEach(element => {
-       let cp: ƒ.Node = element;
-       let posLocal: ƒ.Vector3 = ƒ.Vector3.TRANSFORMATION(cartNode.mtxWorld.translation, cp.mtxWorldInverse, true);
-       let x = cp.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2 + cartNode.radius;
-       let y = cp.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.y / 2 + cartNode.radius;
- 
-       if (posLocal.x <= (x) && posLocal.x >= -(x) && posLocal.y <= y && posLocal.y >= 0) {
-         console.log("intersecting");
-         GameState.get().lapprogress -= 0.1;
-         if (GameState.get().laptime >= 500) {
-           GameState.get().laptime -= 500;
-         } else {
-           GameState.get().laptime = 0;
-         }
- 
-           let cmpAudio: ƒ.ComponentAudio = getcmpAudio("sndHit");
-         cmpAudio.play(true);
- 
-         cartNode.getComponent(agentComponentScript).respawn(); 
-       }
-     }); 
- 
-   }
- */
 
   function hndCollision(_event: ƒ.EventPhysics) {
     let cp: ƒ.Node = _event.cmpRigidbody.node;
@@ -261,29 +297,30 @@ namespace Script {
       if (element) counter++;
     });
 
-    if ( index == 6 && counter == 0) {
+    if (index == 6 && counter == 0) {
       console.log();
       GameState.get().lapRunning = true;
       GameState.get().laptime = 0;
-      //cartNode.getComponent(CartCustomComponentScript).cpArray[index] = false;
+      console.log("Lap started");
+      cartNode.getComponent(CartCustomComponentScript).cpArray[index] = true;
     } else {
-      cartNode.getComponent(CartCustomComponentScript).cpArray[index] = true;
+      if (cartNode.getComponent(CartCustomComponentScript).cpArray[index - 1] && index > 0) {
+        cartNode.getComponent(CartCustomComponentScript).cpArray[index] = true;
+      }
+      else if (index == 0 && cartNode.getComponent(CartCustomComponentScript).cpArray[cartNode.getComponent(CartCustomComponentScript).cpArray.length - 1]) {
+        cartNode.getComponent(CartCustomComponentScript).cpArray[index] = true;
+        cartNode.getComponent(CartCustomComponentScript).cpArray[cartNode.getComponent(CartCustomComponentScript).cpArray.length - 1] = false;
+      }
+      else {
+        console.log("Skipped: " + ", Index; " + (index - 1));
+        cartNode.getComponent(CartCustomComponentScript).resetLight(index); // currently doesnt work because of physics
+
+      }
     }
-
-    
-
-    /* if (cartNode.getComponent(CartCustomComponentScript).cpArray[index - 1] && index != 5) {
-      cartNode.getComponent(CartCustomComponentScript).cpArray[index] = true;
-    }
-    else {
-      console.log("Skipped CP: " + cp.name + ", Index; " + (index - 1));
-      cartNode.getComponent(CartCustomComponentScript).resetLight(index);
-
-    } */
+    console.log(cartNode.getComponent(CartCustomComponentScript).cpArray.toString());
 
 
   }
-
 
   function placeCameraOnCart(): void {
     cameraNode.mtxLocal.mutate({
@@ -292,9 +329,9 @@ namespace Script {
     });
   }
 
-  function placeCartOnTerrain(): void {
+  /* function placeCartOnTerrain(): void {
     let terrainInfo: ƒ.TerrainInfo = meshTerrain.getTerrainInfo(cartNode.mtxLocal.translation, mtxTerrain);
     cartNode.mtxLocal.translation = terrainInfo.position;
     cartNode.mtxLocal.showTo(ƒ.Vector3.SUM(terrainInfo.position, cartNode.mtxLocal.getZ()), terrainInfo.normal);
-  }
+  } */
 }
