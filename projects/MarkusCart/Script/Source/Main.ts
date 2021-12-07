@@ -164,7 +164,7 @@ namespace Script {
 
   function cartStbilizer():void {
     let maxHeight: number = 0.3;
-    let minHieght: number = 0.2;
+    let minHeight: number = 0.2;
     let wheelNodes: ƒ.Node[] = cartBody.getChildren();
     let force: ƒ.Vector3 = ƒ.Vector3.SCALE(ƒ.Physics.world.getGravity(), -cartRb.mass / wheelNodes.length);
 
@@ -172,8 +172,19 @@ namespace Script {
       let posWheel: ƒ.Vector3 = wheelNode.getComponent(ƒ.ComponentMesh).mtxWorld.translation;
       let terrainInfo: ƒ.TerrainInfo = meshTerrain.getTerrainInfo(posWheel, mtxTerrain);
       let height: number = posWheel.y - terrainInfo.position.y;
+      let forceScale: number = 1;
 
-      cartRb.applyForceAtPoint(ƒ.Vector3.SCALE(force, 1 / height), posWheel);
+      if ( height > maxHeight) {
+        forceScale = 0; 
+      }
+      else if (height <= maxHeight && height >= minHeight) {
+        forceScale = 1 / (height*2);
+      }
+      else {
+        forceScale = 1 / (height);
+      }
+
+      cartRb.applyForceAtPoint(ƒ.Vector3.SCALE(force, 1 / (height*2)), posWheel);
     }
 
   }
@@ -189,7 +200,7 @@ namespace Script {
       let terrainInfo: ƒ.TerrainInfo = meshTerrain.getTerrainInfo(posWheel, mtxTerrain);
       let height: number = posWheel.y - terrainInfo.position.y;
 
-      let forceScale: number = map_range(1/height,1/minHeight, 1/maxHeight, 0,4);
+      let forceScale: number = map_range(1/height, minHeight, maxHeight, 0,4);
       console.log(forceScale);
 
       cartRb.applyForceAtPoint(ƒ.Vector3.SCALE(force, forceScale), posWheel);
@@ -201,7 +212,7 @@ namespace Script {
   
     let forward: number = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP], [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]);
     ctrForward.setInput(forward);
-    cartRb.applyForce(ƒ.Vector3.SCALE(cartNode.mtxLocal.getZ(), ctrForward.getOutput() * cartRb.mass * 40));
+    cartRb.applyForce(ƒ.Vector3.SCALE(cartNode.mtxLocal.getZ(), ctrForward.getOutput() * cartRb.mass * 80));
 
 
 
@@ -223,9 +234,9 @@ namespace Script {
     ctrTurn.setInput(turn);
 
     if (ctrForward.getOutput() < 0) {
-      cartRb.applyTorque(ƒ.Vector3.SCALE(ƒ.Vector3.Y(), -ctrTurn.getOutput() * 2));
+      cartRb.applyTorque(ƒ.Vector3.SCALE(ƒ.Vector3.Y(), -ctrTurn.getOutput() * 6));
     } else {
-      cartRb.applyTorque(ƒ.Vector3.SCALE(ƒ.Vector3.Y(), ctrTurn.getOutput() * 2));
+      cartRb.applyTorque(ƒ.Vector3.SCALE(ƒ.Vector3.Y(), ctrTurn.getOutput() * 6));
     }
   }
 

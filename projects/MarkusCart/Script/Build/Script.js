@@ -307,14 +307,24 @@ var Script;
     }
     function cartStbilizer() {
         let maxHeight = 0.3;
-        let minHieght = 0.2;
+        let minHeight = 0.2;
         let wheelNodes = cartBody.getChildren();
         let force = ƒ.Vector3.SCALE(ƒ.Physics.world.getGravity(), -cartRb.mass / wheelNodes.length);
         for (let wheelNode of wheelNodes) {
             let posWheel = wheelNode.getComponent(ƒ.ComponentMesh).mtxWorld.translation;
             let terrainInfo = meshTerrain.getTerrainInfo(posWheel, mtxTerrain);
             let height = posWheel.y - terrainInfo.position.y;
-            cartRb.applyForceAtPoint(ƒ.Vector3.SCALE(force, 1 / height), posWheel);
+            let forceScale = 1;
+            if (height > maxHeight) {
+                forceScale = 0;
+            }
+            else if (height <= maxHeight && height >= minHeight) {
+                forceScale = 1 / (height * 2);
+            }
+            else {
+                forceScale = 1 / (height);
+            }
+            cartRb.applyForceAtPoint(ƒ.Vector3.SCALE(force, 1 / (height * 2)), posWheel);
         }
     }
     function cartStbilizerV2() {
@@ -326,7 +336,7 @@ var Script;
             let posWheel = wheelNode.getComponent(ƒ.ComponentMesh).mtxWorld.translation;
             let terrainInfo = meshTerrain.getTerrainInfo(posWheel, mtxTerrain);
             let height = posWheel.y - terrainInfo.position.y;
-            let forceScale = map_range(1 / height, 1 / minHeight, 1 / maxHeight, 0, 4);
+            let forceScale = map_range(1 / height, minHeight, maxHeight, 0, 4);
             console.log(forceScale);
             cartRb.applyForceAtPoint(ƒ.Vector3.SCALE(force, forceScale), posWheel);
         }
@@ -334,7 +344,7 @@ var Script;
     function cartControlls() {
         let forward = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP], [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]);
         ctrForward.setInput(forward);
-        cartRb.applyForce(ƒ.Vector3.SCALE(cartNode.mtxLocal.getZ(), ctrForward.getOutput() * cartRb.mass * 40));
+        cartRb.applyForce(ƒ.Vector3.SCALE(cartNode.mtxLocal.getZ(), ctrForward.getOutput() * cartRb.mass * 80));
         let speed = ctrForward.getOutput() * cartRb.mass * 30 / 1000;
         let speedTacho = map_range(speed, 0, cartMaxSpeed, 0, 270);
         if (speed > 0) {
@@ -348,10 +358,10 @@ var Script;
         let turn = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT], [ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]);
         ctrTurn.setInput(turn);
         if (ctrForward.getOutput() < 0) {
-            cartRb.applyTorque(ƒ.Vector3.SCALE(ƒ.Vector3.Y(), -ctrTurn.getOutput() * 2));
+            cartRb.applyTorque(ƒ.Vector3.SCALE(ƒ.Vector3.Y(), -ctrTurn.getOutput() * 6));
         }
         else {
-            cartRb.applyTorque(ƒ.Vector3.SCALE(ƒ.Vector3.Y(), ctrTurn.getOutput() * 2));
+            cartRb.applyTorque(ƒ.Vector3.SCALE(ƒ.Vector3.Y(), ctrTurn.getOutput() * 6));
         }
     }
     function startGame() {
