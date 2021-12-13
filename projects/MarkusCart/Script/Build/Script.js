@@ -204,6 +204,9 @@ var Script;
     let checkpoints;
     let mtxTerrain;
     let meshTerrain;
+    let isGrounded = false;
+    let dampTranslation;
+    let dampRotation;
     let cartMaxSpeed = 80;
     //let runningLap: boolean = false;
     let cameraNode = new ƒ.Node("cameraNode");
@@ -211,10 +214,10 @@ var Script;
     let cmpCameraMinimap = new ƒ.ComponentCamera();
     /* let carSpeed: number = 3;
     let carTurn: number = 2.5; */
-    let ctrForward = new ƒ.Control("Forward", 10, 0 /* PROPORTIONAL */);
-    ctrForward.setDelay(1000);
-    let ctrTurn = new ƒ.Control("Turn", 10, 0 /* PROPORTIONAL */);
-    ctrTurn.setDelay(80);
+    let ctrForward = new ƒ.Control("Forward", 32000, 0 /* PROPORTIONAL */);
+    ctrForward.setDelay(5000);
+    let ctrTurn = new ƒ.Control("Turn", 1000, 0 /* PROPORTIONAL */);
+    ctrTurn.setDelay(100);
     window.addEventListener("load", start);
     async function start(_event) {
         await ƒ.Project.loadResourcesFromHTML();
@@ -233,6 +236,8 @@ var Script;
         //checkpoints.getChildren().forEach(element => {
         cartNode.getComponent(ƒ.ComponentRigidbody).addEventListener("ColliderEnteredCollision" /* COLLISION_ENTER */, hndCollision);
         //});
+        dampTranslation = cartRb.dampTranslation;
+        dampRotation = cartRb.dampRotation;
         cmpCamera.mtxPivot.translation = new ƒ.Vector3(0, 8, -12);
         cmpCamera.mtxPivot.rotation = new ƒ.Vector3(25, 0, 0);
         cameraNode.addComponent(cmpCamera);
@@ -260,12 +265,11 @@ var Script;
         console.log("graph: ", graph);
     }
     function update(_event) {
-        cartStbilizer();
+        cartControlls();
         placeCameraOnCart();
         hudConstrolls();
         ƒ.Physics.world.simulate(Math.min(0.1, ƒ.Loop.timeFrameReal / 1000));
         if (Script.GameState.get().gameRunning) {
-            cartControlls();
             document.querySelector("#info").setAttribute("hidden", "true");
         }
         else if (!Script.GameState.get().gameRunning) {
@@ -305,47 +309,55 @@ var Script;
         }
         Script.GameState.get().lapprogress = counter / 7;
     }
-    function cartStbilizer() {
-        let maxHeight = 0.3;
-        let minHeight = 0.2;
-        let wheelNodes = cartBody.getChildren();
-        let force = ƒ.Vector3.SCALE(ƒ.Physics.world.getGravity(), -cartRb.mass / wheelNodes.length);
-        for (let wheelNode of wheelNodes) {
-            let posWheel = wheelNode.getComponent(ƒ.ComponentMesh).mtxWorld.translation;
-            let terrainInfo = meshTerrain.getTerrainInfo(posWheel, mtxTerrain);
-            let height = posWheel.y - terrainInfo.position.y;
-            let forceScale = 1;
-            if (height > maxHeight) {
-                forceScale = 0;
-            }
-            else if (height <= maxHeight && height >= minHeight) {
-                forceScale = 1 / (height * 2);
-            }
-            else {
-                forceScale = 1 / (height);
-            }
-            cartRb.applyForceAtPoint(ƒ.Vector3.SCALE(force, 1 / (height * 2)), posWheel);
-        }
-    }
-    function cartStbilizerV2() {
-        let maxHeight = 0.3;
-        let minHeight = 0.2;
-        let wheelNodes = cartBody.getChildren();
-        let force = ƒ.Vector3.SCALE(ƒ.Physics.world.getGravity(), -cartRb.mass / wheelNodes.length);
-        for (let wheelNode of wheelNodes) {
-            let posWheel = wheelNode.getComponent(ƒ.ComponentMesh).mtxWorld.translation;
-            let terrainInfo = meshTerrain.getTerrainInfo(posWheel, mtxTerrain);
-            let height = posWheel.y - terrainInfo.position.y;
-            let forceScale = map_range(1 / height, minHeight, maxHeight, 0, 4);
-            console.log(forceScale);
-            cartRb.applyForceAtPoint(ƒ.Vector3.SCALE(force, forceScale), posWheel);
-        }
-    }
+    /*  function cartStbilizer():void {
+       /* let maxHeight: number = 0.3;
+       let minHeight: number = 0.2; /
+       let wheelNodes: ƒ.Node[] = cartBody.getChildren();
+       let force: ƒ.Vector3 = ƒ.Vector3.SCALE(ƒ.Physics.world.getGravity(), -cartRb.mass / wheelNodes.length);
+   
+       for (let wheelNode of wheelNodes) {
+         let posWheel: ƒ.Vector3 = wheelNode.getComponent(ƒ.ComponentMesh).mtxWorld.translation;
+         let terrainInfo: ƒ.TerrainInfo = meshTerrain.getTerrainInfo(posWheel, mtxTerrain);
+         let height: number = posWheel.y - terrainInfo.position.y;
+   
+         cartRb.applyForceAtPoint(ƒ.Vector3.SCALE(force, 1 /height), posWheel);
+       }
+     } */
     function cartControlls() {
-        let forward = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP], [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]);
-        ctrForward.setInput(forward);
-        cartRb.applyForce(ƒ.Vector3.SCALE(cartNode.mtxLocal.getZ(), ctrForward.getOutput() * cartRb.mass * 80));
-        let speed = ctrForward.getOutput() * cartRb.mass * 30 / 1000;
+        let maxHeight = 0.3;
+        let minHeight = 0.2;
+        let wheelNodes = cartBody.getChildren();
+        let force = ƒ.Vector3.SCALE(ƒ.Physics.world.getGravity(), -cartRb.mass / wheelNodes.length);
+        isGrounded = false;
+        for (let forceNode of wheelNodes) {
+            let posWheel = forceNode.getComponent(ƒ.ComponentMesh).mtxWorld.translation;
+            let terrainInfo = meshTerrain.getTerrainInfo(posWheel, mtxTerrain);
+            let height = posWheel.y - terrainInfo.position.y;
+            if (height < maxHeight) {
+                cartRb.applyForceAtPoint(ƒ.Vector3.SCALE(force, (maxHeight - height) / (maxHeight - minHeight)), posWheel);
+                isGrounded = true;
+            }
+        }
+        if (Script.GameState.get().gameRunning) {
+            if (isGrounded) {
+                cartRb.dampTranslation = dampTranslation;
+                cartRb.dampRotation = dampRotation;
+                let turn = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT], [ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]);
+                ctrTurn.setInput(turn);
+                if (ctrForward.getOutput() < 0) {
+                    cartRb.applyTorque(ƒ.Vector3.SCALE(cart.mtxLocal.getY(), -ctrTurn.getOutput()));
+                }
+                else {
+                    cartRb.applyTorque(ƒ.Vector3.SCALE(cart.mtxLocal.getY(), ctrTurn.getOutput()));
+                }
+                let forward = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP], [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]);
+                ctrForward.setInput(forward);
+                cartRb.applyForce(ƒ.Vector3.SCALE(cartNode.mtxLocal.getZ(), ctrForward.getOutput()));
+            }
+            else
+                cartRb.dampRotation = cartRb.dampTranslation = 0;
+        }
+        let speed = ctrForward.getOutput() * cartRb.mass / 100000;
         let speedTacho = map_range(speed, 0, cartMaxSpeed, 0, 270);
         if (speed > 0) {
             document.getElementById("needle").style.transform = "rotate(" + (-speedTacho + 45) + "deg)";
@@ -355,15 +367,38 @@ var Script;
             document.getElementById("needle").style.transform = "rotate(" + (speedTacho + 45) + "deg)";
             Script.GameState.get().speed = -speed.toFixed(2) + " km/h";
         }
-        let turn = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT], [ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]);
-        ctrTurn.setInput(turn);
-        if (ctrForward.getOutput() < 0) {
-            cartRb.applyTorque(ƒ.Vector3.SCALE(ƒ.Vector3.Y(), -ctrTurn.getOutput() * 6));
-        }
-        else {
-            cartRb.applyTorque(ƒ.Vector3.SCALE(ƒ.Vector3.Y(), ctrTurn.getOutput() * 6));
-        }
     }
+    /*  function cartControlls():void {
+     
+       let forward: number = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP], [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]);
+       ctrForward.setInput(forward);
+       cartRb.applyForce(ƒ.Vector3.SCALE(cartNode.mtxLocal.getZ(), ctrForward.getOutput() * cartRb.mass * 80));
+   
+   
+   
+       let speed: number = ctrForward.getOutput() * cartRb.mass * 30 / 1000;
+   
+       let speedTacho = map_range(speed, 0, cartMaxSpeed, 0, 270);
+   
+       if (speed > 0) {
+         document.getElementById("needle").style.transform = "rotate(" + (-speedTacho + 45) + "deg)";
+         GameState.get().speed = speed.toFixed(2) + " km/h";
+       } else {
+         document.getElementById("needle").style.transform = "rotate(" + (speedTacho + 45) + "deg)";
+         GameState.get().speed = -speed.toFixed(2) + " km/h";
+       }
+   
+   
+       let turn: number = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT], [ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]);
+   
+       ctrTurn.setInput(turn);
+   
+       if (ctrForward.getOutput() < 0) {
+         cartRb.applyTorque(ƒ.Vector3.SCALE(ƒ.Vector3.Y(), -ctrTurn.getOutput() * 6));
+       } else {
+         cartRb.applyTorque(ƒ.Vector3.SCALE(ƒ.Vector3.Y(), ctrTurn.getOutput() * 6));
+       }
+     } */
     function startGame() {
         if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.SPACE, ƒ.KEYBOARD_CODE.ENTER])) {
             Script.GameState.get().gameRunning = true;
@@ -447,7 +482,7 @@ var Script;
                 cartNode.getComponent(Script.CartCustomComponentScript).resetLight(index); // currently doesnt work because of physics
             }
         }
-        console.log(cartNode.getComponent(Script.CartCustomComponentScript).cpArray.toString());
+        //console.log(cartNode.getComponent(CartCustomComponentScript).cpArray.toString());
     }
     function placeCameraOnCart() {
         cameraNode.mtxLocal.mutate({

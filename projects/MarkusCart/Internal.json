@@ -223,6 +223,38 @@
       "type": "MeshCube"
     }
   },
+  "MeshRelief|2021-12-13T14:47:16.309Z|31754": {
+    "ƒ.MeshRelief": {
+      "idResource": "MeshRelief|2021-12-13T14:47:16.309Z|31754",
+      "name": "meshReflief",
+      "type": "MeshRelief",
+      "idTexture": "TextureImage|2021-12-13T14:41:36.385Z|59830"
+    }
+  },
+  "TextureImage|2021-12-13T14:41:36.385Z|59830": {
+    "ƒ.TextureImage": {
+      "url": "Texture\\frictionMap.png",
+      "type": "TextureImage",
+      "Texture": {
+        "idResource": "TextureImage|2021-12-13T14:41:36.385Z|59830",
+        "name": "frictionMap",
+        "mipmap": "CRISP"
+      }
+    }
+  },
+  "Material|2021-12-13T14:44:59.087Z|60667": {
+    "ƒ.Material": {
+      "name": "mtrText",
+      "idResource": "Material|2021-12-13T14:44:59.087Z|60667",
+      "shader": "ShaderTexture",
+      "coat": {
+        "ƒ.CoatTextured": {
+          "color": "[1, 1, 1, 1]",
+          "idTexture": "TextureImage|2021-12-13T14:41:36.385Z|59830"
+        }
+      }
+    }
+  },
   "Graph|2021-11-18T14:34:07.958Z|41539": {
     "ƒ.Graph": {
       "name": "Graph",
@@ -952,6 +984,61 @@
                   },
                   "children": []
                 }
+              },
+              {
+                "ƒ.Node": {
+                  "name": "FrictionMap",
+                  "components": {
+                    "ComponentMesh": [
+                      {
+                        "ƒ.ComponentMesh": {
+                          "idMesh": "MeshRelief|2021-12-13T14:47:16.309Z|31754",
+                          "pivot": {
+                            "translation": "[0, 0, 0]",
+                            "rotation": "[0, 0, 0]",
+                            "scaling": "[100, 0, 100]"
+                          },
+                          "Component": {
+                            "active": true
+                          }
+                        }
+                      }
+                    ],
+                    "ComponentMaterial": [
+                      {
+                        "ƒ.ComponentMaterial": {
+                          "sortForAlpha": false,
+                          "clrPrimary": "[1, 1, 1, 1]",
+                          "clrSecondary": "[1, 1, 1, 1]",
+                          "pivot": {
+                            "translation": "[0, 0]",
+                            "rotation": 0,
+                            "scaling": "[1, 1]"
+                          },
+                          "Component": {
+                            "active": true
+                          },
+                          "idMaterial": "Material|2021-12-13T14:44:59.087Z|60667"
+                        }
+                      }
+                    ],
+                    "ComponentTransform": [
+                      {
+                        "ƒ.ComponentTransform": {
+                          "local": {
+                            "translation": "[0, 0, 0]",
+                            "rotation": "[0, 0, 0]",
+                            "scaling": "[1, 1, 1]"
+                          },
+                          "Component": {
+                            "active": true
+                          }
+                        }
+                      }
+                    ]
+                  },
+                  "children": []
+                }
               }
             ]
           }
@@ -991,8 +1078,8 @@
                     "friction": 0.2,
                     "restitution": 0.2,
                     "mass": 200,
-                    "dampTranslation": 30,
-                    "dampRotation": 30,
+                    "dampTranslation": 3,
+                    "dampRotation": 100,
                     "effectGravity": 1,
                     "typeBody": "DYNAMIC",
                     "typeCollider": "CUBE",
@@ -1747,6 +1834,16 @@
       },
       "fitTexture": true,
       "sectors": 14
+    }
+  },
+  "MeshTerrain|2021-12-13T14:45:27.063Z|85834": {
+    "ƒ.MeshTerrain": {
+      "idResource": "MeshTerrain|2021-12-13T14:45:27.063Z|85834",
+      "name": "meshFric",
+      "type": "MeshTerrain",
+      "seed": 0,
+      "scale": "[1, 1]",
+      "resolution": "[2, 2]"
     }
   }
 }
