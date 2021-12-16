@@ -13,13 +13,13 @@ namespace Script {
   let checkpoints: ƒ.Node;
   let mtxTerrain: ƒ.Matrix4x4;
   let meshTerrain: ƒ.MeshTerrain;
-  let mtxFriction: ƒ.Matrix4x4;
-  let meshFriction: ƒ.MeshTerrain;
+ // let mtxFriction: ƒ.Matrix4x4;
+ // let meshFriction: ƒ.MeshTerrain;
   let isGrounded: boolean = false;
   let dampTranslation: number;
   let dampRotation: number;
 
-  let cartMaxSpeed: number = 80;
+  let cartMaxSpeed: number = 120;
   //let runningLap: boolean = false;
 
   let cameraNode: ƒ.Node = new ƒ.Node("cameraNode");
@@ -97,9 +97,9 @@ namespace Script {
     meshTerrain = <ƒ.MeshTerrain>cmpMeshTerrain.mesh;
     mtxTerrain = cmpMeshTerrain.mtxWorld;
 
-    let cmpMeshFriction: ƒ.ComponentMesh = graph.getChildrenByName("Terrain")[0].getChildrenByName("FrictionMap")[0].getComponent(ƒ.ComponentMesh);
+    /* let cmpMeshFriction: ƒ.ComponentMesh = graph.getChildrenByName("Terrain")[0].getChildrenByName("FrictionMap")[0].getComponent(ƒ.ComponentMesh);
     meshFriction = <ƒ.MeshTerrain>cmpMeshFriction.mesh;
-    mtxFriction = cmpMeshFriction.mtxWorld;
+    mtxFriction = cmpMeshFriction.mtxWorld; */
 
 
     ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
@@ -212,11 +212,11 @@ namespace Script {
        // }
         let forward: number = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP], [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]);
 
-        let posCart: ƒ.Vector3 = cartNode.getChildren()[0].getChildren()[0].getComponent(ƒ.ComponentMesh).mtxWorld.translation;
+ /*       let posCart: ƒ.Vector3 = cartNode.getChildren()[0].getChildren()[0].getComponent(ƒ.ComponentMesh).mtxWorld.translation;
         let frictionInfo: ƒ.TerrainInfo = meshFriction.getTerrainInfo(posCart, mtxFriction);
 
         let frictionScale: number = posCart.y - frictionInfo.position.y;
- /*
+ 
         let cmpTexFric: ƒ.ComponentMaterial = graph.getChildrenByName("Terrain")[0].getChildrenByName("FrictionMap")[0].getComponent(ƒ.ComponentMaterial);
         let colorInfo:  ƒ.TextureImage = <ƒ.TextureImage>ƒ.Project.resources["Graph|2021-11-18T14:34:07.958Z|41539"];
         let test: any = frictionInfo.position. */

@@ -205,12 +205,12 @@ var Script;
     let checkpoints;
     let mtxTerrain;
     let meshTerrain;
-    let mtxFriction;
-    let meshFriction;
+    // let mtxFriction: ƒ.Matrix4x4;
+    // let meshFriction: ƒ.MeshTerrain;
     let isGrounded = false;
     let dampTranslation;
     let dampRotation;
-    let cartMaxSpeed = 80;
+    let cartMaxSpeed = 120;
     //let runningLap: boolean = false;
     let cameraNode = new ƒ.Node("cameraNode");
     let cmpCamera = new ƒ.ComponentCamera();
@@ -264,9 +264,9 @@ var Script;
         let cmpMeshTerrain = graph.getChildrenByName("Terrain")[0].getComponent(ƒ.ComponentMesh);
         meshTerrain = cmpMeshTerrain.mesh;
         mtxTerrain = cmpMeshTerrain.mtxWorld;
-        let cmpMeshFriction = graph.getChildrenByName("Terrain")[0].getChildrenByName("FrictionMap")[0].getComponent(ƒ.ComponentMesh);
-        meshFriction = cmpMeshFriction.mesh;
-        mtxFriction = cmpMeshFriction.mtxWorld;
+        /* let cmpMeshFriction: ƒ.ComponentMesh = graph.getChildrenByName("Terrain")[0].getChildrenByName("FrictionMap")[0].getComponent(ƒ.ComponentMesh);
+        meshFriction = <ƒ.MeshTerrain>cmpMeshFriction.mesh;
+        mtxFriction = cmpMeshFriction.mtxWorld; */
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
         ƒ.Loop.start(ƒ.LOOP_MODE.TIME_REAL, 60); // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
         console.log("graph: ", graph);
@@ -357,10 +357,11 @@ var Script;
                 cartRb.applyTorque(ƒ.Vector3.SCALE(cart.mtxLocal.getY(), ctrTurn.getOutput()));
                 // }
                 let forward = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP], [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]);
-                let posCart = cartNode.getChildren()[0].getChildren()[0].getComponent(ƒ.ComponentMesh).mtxWorld.translation;
-                let frictionInfo = meshFriction.getTerrainInfo(posCart, mtxFriction);
-                let frictionScale = posCart.y - frictionInfo.position.y;
-                /*
+                /*       let posCart: ƒ.Vector3 = cartNode.getChildren()[0].getChildren()[0].getComponent(ƒ.ComponentMesh).mtxWorld.translation;
+                       let frictionInfo: ƒ.TerrainInfo = meshFriction.getTerrainInfo(posCart, mtxFriction);
+               
+                       let frictionScale: number = posCart.y - frictionInfo.position.y;
+                
                        let cmpTexFric: ƒ.ComponentMaterial = graph.getChildrenByName("Terrain")[0].getChildrenByName("FrictionMap")[0].getComponent(ƒ.ComponentMaterial);
                        let colorInfo:  ƒ.TextureImage = <ƒ.TextureImage>ƒ.Project.resources["Graph|2021-11-18T14:34:07.958Z|41539"];
                        let test: any = frictionInfo.position. */
