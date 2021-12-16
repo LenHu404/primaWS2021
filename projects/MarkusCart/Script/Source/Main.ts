@@ -58,7 +58,7 @@ namespace Script {
     cartNode.mtxLocal.rotation = new ƒ.Vector3(0, -90, 0);
 
     //checkpoints.getChildren().forEach(element => {
-    cartNode.getComponent(ƒ.ComponentRigidbody).addEventListener(ƒ.EVENT_PHYSICS.COLLISION_ENTER, hndCollision)
+    cartNode.getComponent(ƒ.ComponentRigidbody).addEventListener(ƒ.EVENT_PHYSICS.TRIGGER_ENTER, hndCollision, true)
     //});
 
     dampTranslation = cartRb.dampTranslation;
@@ -86,6 +86,7 @@ namespace Script {
 
     viewportMinimap.calculateTransforms();
     viewport.calculateTransforms();
+    // viewport.physicsDebugMode = ƒ.PHYSICS_DEBUGMODE.COLLIDERS;
 
     ƒ.Physics.adjustTransforms(graph);
     ƒ.AudioManager.default.listenTo(graph);
@@ -147,15 +148,16 @@ namespace Script {
     if (!GameState.get().lapRunning) {
       GameState.get().laptimeString = "-- : -- : -- : --";
     }
-    let counter: number = 0;
-    for (let i = 0; i < cartNode.getComponent(CartCustomComponentScript).cpArray.length; i++) {
-      if (cartNode.getComponent(CartCustomComponentScript).cpArray[i]) {
-        counter++;
-      }
-    }
-    if (counter == 7) {
+    let counter: number = 0; 
+
+    cartNode.getComponent(CartCustomComponentScript).cpArray.forEach(element => {
+      if (element) counter++;
+    });
+
+    if (counter == 7 ) {
       GameState.get().laps++;
       cartNode.getComponent(CartCustomComponentScript).cpArray.fill(false);
+      cartNode.getComponent(CartCustomComponentScript).cpArray[6]= true;
       console.log("Laptime: ", GameState.get().laptimeString);
       GameState.get().laptime = 0;
     }
@@ -342,6 +344,8 @@ namespace Script {
     cartNode.getComponent(CartCustomComponentScript).cpArray.forEach(element => {
       if (element) counter++;
     });
+
+    
 
     if (index == 6 && counter == 0) {
       console.log();

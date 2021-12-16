@@ -26,9 +26,9 @@ var Script;
                     }
                 };
                 this.update = (_event) => {
-                    //if (GameState.get().gameRunning){
-                    // this.cartControlls(_event)
-                    //}
+                    /* if (GameState.get().gameRunning){
+                     this.cartControlls(_event)
+                    } */
                     /* let collider: ƒ.ComponentRigidbody = this.node.getComponent(ƒ.ComponentRigidbody)
                     collider.checkCollisionEvents(); */
                 };
@@ -86,14 +86,15 @@ var Script;
                     let deltaTime = ƒ.Loop.timeFrameReal / 1000;
                     let turn = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT], [ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]);
                     this.ctrTurn.setInput(turn * deltaTime);
-                    /* if (this.ctrForward.getOutput() < 0) {
-                      this.node.mtxLocal.rotateY(-this.ctrTurn.getOutput());
-                    } else {
-                      this.node.mtxLocal.rotateY(this.ctrTurn.getOutput());
-                    } */
+                    if (this.ctrForward.getOutput() < 0) {
+                        this.node.mtxLocal.rotateY(-this.ctrTurn.getOutput());
+                    }
+                    else {
+                        this.node.mtxLocal.rotateY(this.ctrTurn.getOutput());
+                    }
                     let forward = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP], [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]);
                     this.ctrForward.setInput(forward * deltaTime);
-                    //this.node.mtxLocal.translateZ(this.ctrForward.getOutput());
+                    this.node.mtxLocal.translateZ(this.ctrForward.getOutput());
                     let speed = this.ctrForward.getOutput().valueOf();
                     let speedTacho = this.map_range(speed, 0, 2.5, 0, 270);
                     if (speed > 0) {
@@ -236,7 +237,7 @@ var Script;
         cartNode.mtxLocal.translation = new ƒ.Vector3(-16, 3.0000, -34.5);
         cartNode.mtxLocal.rotation = new ƒ.Vector3(0, -90, 0);
         //checkpoints.getChildren().forEach(element => {
-        cartNode.getComponent(ƒ.ComponentRigidbody).addEventListener("ColliderEnteredCollision" /* COLLISION_ENTER */, hndCollision);
+        cartNode.getComponent(ƒ.ComponentRigidbody).addEventListener("TriggerEnteredCollision" /* TRIGGER_ENTER */, hndCollision, true);
         //});
         dampTranslation = cartRb.dampTranslation;
         dampRotation = cartRb.dampRotation;
@@ -256,6 +257,7 @@ var Script;
         viewportMinimap.initialize("Viewport", graph, cmpCameraMinimap, canvasMinimap);
         viewportMinimap.calculateTransforms();
         viewport.calculateTransforms();
+        // viewport.physicsDebugMode = ƒ.PHYSICS_DEBUGMODE.COLLIDERS;
         ƒ.Physics.adjustTransforms(graph);
         ƒ.AudioManager.default.listenTo(graph);
         ƒ.AudioManager.default.listenWith(graph.getComponent(ƒ.ComponentAudioListener));
@@ -301,14 +303,14 @@ var Script;
             Script.GameState.get().laptimeString = "-- : -- : -- : --";
         }
         let counter = 0;
-        for (let i = 0; i < cartNode.getComponent(Script.CartCustomComponentScript).cpArray.length; i++) {
-            if (cartNode.getComponent(Script.CartCustomComponentScript).cpArray[i]) {
+        cartNode.getComponent(Script.CartCustomComponentScript).cpArray.forEach(element => {
+            if (element)
                 counter++;
-            }
-        }
+        });
         if (counter == 7) {
             Script.GameState.get().laps++;
             cartNode.getComponent(Script.CartCustomComponentScript).cpArray.fill(false);
+            cartNode.getComponent(Script.CartCustomComponentScript).cpArray[6] = true;
             console.log("Laptime: ", Script.GameState.get().laptimeString);
             Script.GameState.get().laptime = 0;
         }

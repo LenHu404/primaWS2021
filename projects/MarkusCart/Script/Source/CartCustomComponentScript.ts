@@ -50,9 +50,9 @@ namespace Script {
     }
 
     public update = (_event: Event) => {
-      //if (GameState.get().gameRunning){
-      // this.cartControlls(_event)
-      //}
+      /* if (GameState.get().gameRunning){
+       this.cartControlls(_event)
+      } */
       /* let collider: ƒ.ComponentRigidbody = this.node.getComponent(ƒ.ComponentRigidbody)
       collider.checkCollisionEvents(); */
     }
@@ -115,16 +115,16 @@ namespace Script {
 
       let turn: number = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT], [ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]);
       this.ctrTurn.setInput(turn * deltaTime);
-      /* if (this.ctrForward.getOutput() < 0) {
+      if (this.ctrForward.getOutput() < 0) {
         this.node.mtxLocal.rotateY(-this.ctrTurn.getOutput());
       } else {
         this.node.mtxLocal.rotateY(this.ctrTurn.getOutput());
-      } */
+      }
       
 
       let forward: number = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP], [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]);
       this.ctrForward.setInput(forward * deltaTime);
-      //this.node.mtxLocal.translateZ(this.ctrForward.getOutput());
+      this.node.mtxLocal.translateZ(this.ctrForward.getOutput());
 
       let speed :number = this.ctrForward.getOutput().valueOf();
 
