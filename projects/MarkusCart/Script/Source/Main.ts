@@ -75,7 +75,6 @@ namespace Script {
     viewport = new ƒ.Viewport();
     viewport.initialize("Viewport", graph, cmpCamera, canvas);
 
-
     cmpCameraMinimap.mtxPivot.translation = new ƒ.Vector3(0, 120, 0);
     cmpCameraMinimap.mtxPivot.rotation = new ƒ.Vector3(90, 180, 0);
     minimapNode.addComponent(cmpCameraMinimap);
@@ -203,26 +202,26 @@ namespace Script {
         cartRb.dampRotation = dampRotation;
         let turn: number = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT], [ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]);
         ctrTurn.setInput(turn);
-        if (ctrForward.getOutput() < 0) {
-          cartRb.applyTorque(ƒ.Vector3.SCALE(cart.mtxLocal.getY(), -ctrTurn.getOutput()));
-        } else {
+       // if (ctrForward.getOutput() < 0) {
+       //   cartRb.applyTorque(ƒ.Vector3.SCALE(cart.mtxLocal.getY(), -ctrTurn.getOutput()));
+       // } else {
           cartRb.applyTorque(ƒ.Vector3.SCALE(cart.mtxLocal.getY(), ctrTurn.getOutput()));
 
-        }
-
-
+       // }
         let forward: number = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP], [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]);
-/* 
-        let posCart: ƒ.Vector3 = cartNode.getComponent(ƒ.ComponentMesh).mtxWorld.translation;
+
+        let posCart: ƒ.Vector3 = cartNode.getChildren()[0].getChildren()[0].getComponent(ƒ.ComponentMesh).mtxWorld.translation;
         let frictionInfo: ƒ.TerrainInfo = meshFriction.getTerrainInfo(posCart, mtxFriction);
 
+        let frictionScale: number = posCart.y - frictionInfo.position.y;
+ /*
         let cmpTexFric: ƒ.ComponentMaterial = graph.getChildrenByName("Terrain")[0].getChildrenByName("FrictionMap")[0].getComponent(ƒ.ComponentMaterial);
-        let colorInfo: number = ƒ.TextureImage = <ƒ.TextureImage>ƒ.Project.resources["Graph|2021-11-18T14:34:07.958Z|41539"];
+        let colorInfo:  ƒ.TextureImage = <ƒ.TextureImage>ƒ.Project.resources["Graph|2021-11-18T14:34:07.958Z|41539"];
+        let test: any = frictionInfo.position. */
 
- */
-       // let test: any = frictionInfo.position.
+        //cartRb.dampTranslation *= 1/frictionScale;
 
-        ctrForward.setInput(forward);
+        ctrForward.setInput(forward); 
         cartRb.applyForce(ƒ.Vector3.SCALE(cartNode.mtxLocal.getZ(), ctrForward.getOutput()));
       }
       else

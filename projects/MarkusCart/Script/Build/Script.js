@@ -204,6 +204,8 @@ var Script;
     let checkpoints;
     let mtxTerrain;
     let meshTerrain;
+    let mtxFriction;
+    let meshFriction;
     let isGrounded = false;
     let dampTranslation;
     let dampRotation;
@@ -260,6 +262,9 @@ var Script;
         let cmpMeshTerrain = graph.getChildrenByName("Terrain")[0].getComponent(ƒ.ComponentMesh);
         meshTerrain = cmpMeshTerrain.mesh;
         mtxTerrain = cmpMeshTerrain.mtxWorld;
+        let cmpMeshFriction = graph.getChildrenByName("Terrain")[0].getChildrenByName("FrictionMap")[0].getComponent(ƒ.ComponentMesh);
+        meshFriction = cmpMeshFriction.mesh;
+        mtxFriction = cmpMeshFriction.mtxWorld;
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
         ƒ.Loop.start(ƒ.LOOP_MODE.TIME_REAL, 60); // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
         console.log("graph: ", graph);
@@ -344,13 +349,20 @@ var Script;
                 cartRb.dampRotation = dampRotation;
                 let turn = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT], [ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]);
                 ctrTurn.setInput(turn);
-                if (ctrForward.getOutput() < 0) {
-                    cartRb.applyTorque(ƒ.Vector3.SCALE(cart.mtxLocal.getY(), -ctrTurn.getOutput()));
-                }
-                else {
-                    cartRb.applyTorque(ƒ.Vector3.SCALE(cart.mtxLocal.getY(), ctrTurn.getOutput()));
-                }
+                // if (ctrForward.getOutput() < 0) {
+                //   cartRb.applyTorque(ƒ.Vector3.SCALE(cart.mtxLocal.getY(), -ctrTurn.getOutput()));
+                // } else {
+                cartRb.applyTorque(ƒ.Vector3.SCALE(cart.mtxLocal.getY(), ctrTurn.getOutput()));
+                // }
                 let forward = ƒ.Keyboard.mapToTrit([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP], [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]);
+                let posCart = cartNode.getChildren()[0].getChildren()[0].getComponent(ƒ.ComponentMesh).mtxWorld.translation;
+                let frictionInfo = meshFriction.getTerrainInfo(posCart, mtxFriction);
+                let frictionScale = posCart.y - frictionInfo.position.y;
+                /*
+                       let cmpTexFric: ƒ.ComponentMaterial = graph.getChildrenByName("Terrain")[0].getChildrenByName("FrictionMap")[0].getComponent(ƒ.ComponentMaterial);
+                       let colorInfo:  ƒ.TextureImage = <ƒ.TextureImage>ƒ.Project.resources["Graph|2021-11-18T14:34:07.958Z|41539"];
+                       let test: any = frictionInfo.position. */
+                //cartRb.dampTranslation *= 1/frictionScale;
                 ctrForward.setInput(forward);
                 cartRb.applyForce(ƒ.Vector3.SCALE(cartNode.mtxLocal.getZ(), ctrForward.getOutput()));
             }

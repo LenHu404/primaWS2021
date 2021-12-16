@@ -192,8 +192,20 @@
       "shader": "ShaderTexture",
       "coat": {
         "ƒ.CoatTextured": {
-          "color": "[1, 1, 1, 1]"
+          "color": "[1, 1, 1, 1]",
+          "idTexture": "TextureImage|2021-12-14T13:29:09.270Z|73073"
         }
+      }
+    }
+  },
+  "TextureImage|2021-12-14T13:29:09.270Z|73073": {
+    "ƒ.TextureImage": {
+      "url": "Texture\\Skybox.jpg",
+      "type": "TextureImage",
+      "Texture": {
+        "idResource": "TextureImage|2021-12-14T13:29:09.270Z|73073",
+        "name": "skybox",
+        "mipmap": "CRISP"
       }
     }
   },
@@ -227,8 +239,7 @@
     "ƒ.MeshRelief": {
       "idResource": "MeshRelief|2021-12-13T14:47:16.309Z|31754",
       "name": "meshReflief",
-      "type": "MeshRelief",
-      "idTexture": "TextureImage|2021-12-13T14:41:36.385Z|59830"
+      "type": "MeshRelief"
     }
   },
   "TextureImage|2021-12-13T14:41:36.385Z|59830": {
@@ -914,7 +925,7 @@
                         "ƒ.ComponentMesh": {
                           "idMesh": "MeshCube|2021-11-30T23:27:45.548Z|93953",
                           "pivot": {
-                            "translation": "[0, 0, 0]",
+                            "translation": "[0, -1, 0]",
                             "rotation": "[0, 0, 0]",
                             "scaling": "[100, 1, 100]"
                           },
@@ -971,7 +982,7 @@
                           "isTrigger": false,
                           "id": 1,
                           "pivot": {
-                            "translation": "[0, 0, 0]",
+                            "translation": "[0, -1, 0]",
                             "rotation": "[0, 0, 0]",
                             "scaling": "[100, 1, 100]"
                           },
@@ -996,7 +1007,7 @@
                           "pivot": {
                             "translation": "[0, 0, 0]",
                             "rotation": "[0, 0, 0]",
-                            "scaling": "[100, 0, 100]"
+                            "scaling": "[100, 1, 100]"
                           },
                           "Component": {
                             "active": true
@@ -1026,7 +1037,7 @@
                       {
                         "ƒ.ComponentTransform": {
                           "local": {
-                            "translation": "[0, 0, 0]",
+                            "translation": "[0, -1, 0]",
                             "rotation": "[0, 0, 0]",
                             "scaling": "[1, 1, 1]"
                           },
@@ -1077,7 +1088,7 @@
                     "initialization": "TO_PIVOT",
                     "friction": 0.2,
                     "restitution": 0.2,
-                    "mass": 200,
+                    "mass": 330,
                     "dampTranslation": 3,
                     "dampRotation": 100,
                     "effectGravity": 1,
