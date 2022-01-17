@@ -282,7 +282,7 @@ var Script;
             //instaniateObstacles();
             matFloor.mtxPivot.translateX(0.075 * deltaTime * speed);
             band.mtxLocal.translateZ(-1.5 * deltaTime * speed);
-            metercount += 1 * deltaTime * speed;
+            metercount += 1.5 * deltaTime * speed;
             // console.log("metercount", metercount);
             Script.GameState.get().score = (metercount * 100).toFixed(0);
             spawingObstacles();
@@ -408,10 +408,10 @@ var Script;
     function spawingObstacles() {
         if (lastObstacleSpawnDistance >= obstacleDistance) {
             let randomObstacle = Math.random();
-            if (randomObstacle < 0.33) {
+            if (randomObstacle < 0.1) {
                 instaniateTree();
             }
-            else if (randomObstacle > 0.66) {
+            else if (randomObstacle > 0.9) {
                 instaniateStump();
             }
             else {
