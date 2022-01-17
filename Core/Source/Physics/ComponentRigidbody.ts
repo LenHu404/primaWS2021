@@ -322,7 +322,7 @@ namespace FudgeCore {
       this.#collider.userData = this; //reset the extra information so that this collider knows to which Fudge Component it's connected
       this.#collider.setCollisionGroup(this.collisionGroup);
       this.#collider.setCollisionMask(this.collisionMask);
-      
+
       this.#collider.setRestitution(this.#restitution);
       this.#collider.setFriction(this.#friction);
       this.#collider.setContactCallback(this.#callbacks);
@@ -350,7 +350,7 @@ namespace FudgeCore {
 
       let position: Vector3 = mtxWorld.translation; //Adding the offsets from the pivot
       let rotation: Vector3 = mtxWorld.getEulerAngles();
-      let scaling: Vector3 = mtxWorld.scaling;  
+      let scaling: Vector3 = mtxWorld.scaling;
       //scaling requires collider to be recreated
       this.setScaling(scaling);
 
@@ -478,6 +478,8 @@ namespace FudgeCore {
      * Automatically called in the RenderManager, no interaction needed.
      */
     public checkCollisionEvents(): void {
+      if (!this.isInitialized) // check collisions only if intialization completed
+        return;
       let list: OIMO.ContactLink = this.#rigidbody.getContactLinkList(); //all physical contacts between colliding bodies on this rb
       let objHit: ComponentRigidbody; //collision consisting of 2 bodies, so Hit1/2
       let objHit2: ComponentRigidbody;
@@ -491,9 +493,13 @@ namespace FudgeCore {
         let collisionManifold: OIMO.Manifold = list.getContact().getManifold(); //Manifold = Additional informations about the contact
         objHit = list.getContact().getShape1().userData;  //Userdata is used to transfer the ƒ.ComponentRigidbody, it's an empty OimoPhysics Variable
         //Only register the collision on the actual touch, not on "shadowCollide", to register in the moment of impulse calculation
+        if (!objHit.isInitialized)
+          continue;
         if (objHit == null || list.getContact().isTouching() == false) // only act if the collision is actual touching, so right at the moment when a impulse is happening, not when shapes overlap
           return;
         objHit2 = list.getContact().getShape2().userData;
+        if (!objHit2.isInitialized)
+          continue;
         if (objHit2 == null || list.getContact().isTouching() == false)
           return;
         let points: OIMO.ManifoldPoint[] = collisionManifold.getPoints(); //All points in the collision where the two bodies are touching, used to calculate the full impact
@@ -603,14 +609,14 @@ namespace FudgeCore {
       super.deserialize(_serialization[super.constructor.name]);
       this.mtxPivot.deserialize(_serialization.pivot);
       this.#id = _serialization.id;
-      this.mass = _serialization.mass || this.mass;
-      this.dampTranslation = _serialization.dampTranslation || this.dampTranslation;
-      this.dampRotation = _serialization.dampRotation || this.dampRotation;
-      this.collisionGroup = _serialization.collisionGroup || this.collisionGroup;
+      this.mass = ifNumber(_serialization.mass, this.mass);
+      this.dampTranslation = ifNumber(_serialization.dampTranslation, this.dampTranslation);
+      this.dampRotation = ifNumber(_serialization.dampRotation, this.dampRotation);
+      this.collisionGroup = ifNumber(_serialization.collisionGroup, this.collisionGroup);
       this.effectRotation = _serialization.effectRotation || this.effectRotation;
-      this.effectGravity = _serialization.effectGravity || this.effectGravity;
-      this.friction = _serialization.friction || this.friction;
-      this.restitution = _serialization.restitution || this.restitution;
+      this.effectGravity = ifNumber(_serialization.effectGravity, this.effectGravity);
+      this.friction = ifNumber(_serialization.friction, this.friction);
+      this.restitution = ifNumber(_serialization.restitution, this.restitution);
       this.isTrigger = _serialization.isTrigger || this.isTrigger;
       this.initialization = _serialization.initialization;
 
