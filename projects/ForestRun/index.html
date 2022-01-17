@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
+
 <head>
     <title>ForestRun</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="styles.css" />
 
     <!--Editor settings of this project-->
-    <meta type="settings" autoview="Graph|2022-01-06T13:14:39.351Z|61391" project="{'name':'ForestRun','includeAutoViewScript':false,'graphAutoView':'Graph|2022-01-06T13:14:39.351Z|61391'}" panels="[{'type':'PanelProject','state':{}},{'type':'PanelGraph','state':{'graph':'Graph|2022-01-11T13:55:44.114Z|12001'}}]" />
+    <meta type="settings" autoview="Graph|2022-01-06T13:14:39.351Z|61391"
+        project="{'name':'ForestRun','includeAutoViewScript':false,'graphAutoView':'Graph|2022-01-06T13:14:39.351Z|61391'}"
+        panels="[{'type':'PanelProject','state':{}},{'type':'PanelGraph','state':{'graph':'Graph|2022-01-11T13:55:44.114Z|12001'}}]" />
 
     <!--Activate the following line to include the FUDGE-version of Oimo-Physics. You may want to download a local copy to work offline and be independent from future changes!-->
-    <script type="text/javascript" src="../../FudgePhysics/OimoPhysics.js"></script> 
+    <script type="text/javascript" src="../../FudgePhysics/OimoPhysics.js"></script>
 
     <!--Load FUDGE. You may want to download local copies to work offline and be independent from future changes! Developers working on FUDGE itself may want to create symlinks-->
     <script type="text/javascript" src="../../Core/Build/FudgeCore.js"></script>
@@ -36,11 +39,14 @@
     <div id="Hud">
         <div class="Hud" id="topBar">
             <input type="text" key="name" value="Name" disabled="" /> <br />
-            Health <input type="range" key="health" min="0" max="100" value="1" step="0.01" disabled="" />
+            Health <input type="radio" key="health1" id="health1" checked/>
+            <input type="radio" key="health2" id="health2"checked/>
+            <input type="radio" key="health3" id="health3"checked/>
+
             Score <input type="number" key="score" min="0" max="3000000" value="0" disabled="" />
         </div>
     </div>
-    <h1 id="info"> Try to get the fastest Round! <br /> Press Enter or Space to start the Game </h1> 
+    <h1 id="info"> Try to get the fastest Round! <br /> Press Enter or Space to start the Game </h1>
 
 
 
@@ -58,4 +64,5 @@
 
 
 </body>
+
 </html>

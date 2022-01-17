@@ -14,6 +14,10 @@ namespace Script {
   let band: ƒ.Node;
   let obstacles: ƒ.Node;
   let metercount: number = 0;
+  let obstacleDistance: number = 5;
+  let lastObstacleSpawnDistance: number = 5;
+  let lastObstacleSpawn: number = 0;
+  let speed: number = 1;
 
 
   async function start(_event: Event): Promise<void> {
@@ -61,10 +65,13 @@ namespace Script {
     if (GameState.get().gameRunning) {
       document.querySelector("#info").setAttribute("hidden", "true");
       //instaniateObstacles();
-      matFloor.mtxPivot.translateX(0.05 * deltaTime);
-      band.mtxLocal.translateZ(-1 * deltaTime);
-      metercount += -1 * deltaTime;
-      GameState.get().score = <number><unknown>(-metercount*100).toFixed(0);
+      matFloor.mtxPivot.translateX(0.075 * deltaTime * speed);
+      band.mtxLocal.translateZ(-1.5 * deltaTime * speed);
+      metercount += 1 * deltaTime * speed;
+      // console.log("metercount", metercount);
+      GameState.get().score = <number><unknown>(metercount * 100).toFixed(0);
+      spawingObstacles();
+      speed += 0.0001;
     } else if (!GameState.get().gameRunning) {
       startGame();
       document.querySelector("#info").removeAttribute("hidden");
@@ -74,8 +81,7 @@ namespace Script {
       instaniateObstacles();
     }
 
-    //console.log("metercount", metercount);
-
+    console.log("metercount", metercount);
 
     //matFloor.mtxPivot.translation.x += 0.01* deltaTime;
 
@@ -88,7 +94,7 @@ namespace Script {
 
     let treeBlueprint: ƒ.Graph = <ƒ.Graph>FudgeCore.Project.resources["Graph|2022-01-11T13:55:44.114Z|12001"];
 
-    let startPos: ƒ.Vector3 = new ƒ.Vector3(0, 0,-metercount + 4);
+    let startPos: ƒ.Vector3 = new ƒ.Vector3(0, 0, metercount + 4);
 
     let treeInstance = await ƒ.Project.createGraphInstance(treeBlueprint);
 
@@ -98,7 +104,7 @@ namespace Script {
 
     let StoneBlueprint: ƒ.Graph = <ƒ.Graph>FudgeCore.Project.resources["Graph|2022-01-11T13:55:46.329Z|17331"];
 
-    startPos = new ƒ.Vector3(3, 0, -metercount +6);
+    startPos = new ƒ.Vector3(3, 0, metercount + 6);
 
     let stoneInstance = await ƒ.Project.createGraphInstance(StoneBlueprint);
 
@@ -108,7 +114,7 @@ namespace Script {
 
     let treeStumpBlueprint: ƒ.Graph = <ƒ.Graph>FudgeCore.Project.resources["Graph|2022-01-11T13:55:41.283Z|27993"];
 
-    startPos = new ƒ.Vector3(-2, 0,-metercount + 15);
+    startPos = new ƒ.Vector3(-2, 0, metercount + 15);
 
     let treeStumpInstance = await ƒ.Project.createGraphInstance(treeStumpBlueprint);
 
@@ -121,7 +127,7 @@ namespace Script {
 
     let treeBlueprint: ƒ.Graph = <ƒ.Graph>FudgeCore.Project.resources["Graph|2022-01-11T13:55:44.114Z|12001"];
 
-    let startPos: ƒ.Vector3 = new ƒ.Vector3(3, 0, -metercount + 4);
+    let startPos = new ƒ.Vector3(Math.random() * 6 - 3, 0, metercount + 6);
 
     let treeInstance = await ƒ.Project.createGraphInstance(treeBlueprint);
 
@@ -131,10 +137,43 @@ namespace Script {
 
   }
 
+  async function instaniateStone(): Promise<void> {
+
+    let StoneBlueprint: ƒ.Graph = <ƒ.Graph>FudgeCore.Project.resources["Graph|2022-01-11T13:55:46.329Z|17331"];
+
+    let startPos = new ƒ.Vector3(Math.random() * 6 - 3, 0, metercount + 6);
+
+    let stoneInstance = await ƒ.Project.createGraphInstance(StoneBlueprint);
+
+    stoneInstance.mtxLocal.translation = startPos;
+
+    obstacles.addChild(stoneInstance);
+
+  }
+
+  async function instaniateStump(): Promise<void> {
+
+    let treeStumpBlueprint: ƒ.Graph = <ƒ.Graph>FudgeCore.Project.resources["Graph|2022-01-11T13:55:41.283Z|27993"];
+
+    let startPos = new ƒ.Vector3(Math.random() * 4 - 2, 0, metercount + 6);
+
+    let treeStumpInstance = await ƒ.Project.createGraphInstance(treeStumpBlueprint);
+
+    treeStumpInstance.mtxLocal.translation = startPos;
+
+    obstacles.addChild(treeStumpInstance);
+
+  }
+
   function startGame(): void {
     if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.SPACE, ƒ.KEYBOARD_CODE.ENTER])) {
       GameState.get().gameRunning = true;
     }
+    GameState.get().health1 = true;
+    GameState.get().health2 = true;
+    GameState.get().health3 = true;
+    GameState.get().setHealth();
+
   }
 
   function hndCollision(_event: ƒ.EventPhysics) {
@@ -142,18 +181,26 @@ namespace Script {
     if (GameState.get().gameRunning) {
       let obstacle: ƒ.Node = _event.cmpRigidbody.node;
       console.log(obstacle.name);
-      if (obstacle.getParent().name != "Hindernisse"){
+      if (obstacle.getParent().name != "Hindernisse") {
         obstacle = obstacle.getParent();
       }
       for (const node of obstacle.getIterator()) {
-        if(node.getComponent(ƒ.ComponentRigidbody)){
-           node.removeComponent(node.getComponent(ƒ.ComponentRigidbody));
+        if (node.getComponent(ƒ.ComponentRigidbody)) {
+          node.removeComponent(node.getComponent(ƒ.ComponentRigidbody));
         }
         node.activate(false);
       }
       obstacles.removeChild(obstacle);
-      //reset();
-      GameState.get().health -= 1;
+      reset();
+
+      if (GameState.get().hit() == 0) {
+        GameState.get().gameRunning = false;
+        console.log("Score: " + GameState.get().score)
+        GameState.get().score = 0;
+        band.mtxLocal.translation.z = 0;
+        metercount = 0;
+      }
+
       //console.log( GameState.get().health);
     }
 
@@ -163,8 +210,8 @@ namespace Script {
       //console.log(obstacle.name, obstacle.mtxWorld.translation.z);
       if (obstacle.mtxWorld.translation.z < -10) {
         for (const node of obstacle.getIterator()) {
-          if(node.getComponent(ƒ.ComponentRigidbody)){
-             node.removeComponent(node.getComponent(ƒ.ComponentRigidbody));
+          if (node.getComponent(ƒ.ComponentRigidbody)) {
+            node.removeComponent(node.getComponent(ƒ.ComponentRigidbody));
           }
           node.activate(false);
         }
@@ -175,22 +222,41 @@ namespace Script {
   }
 
   function reset(): void {
-    
+
     obstacles.getChildren().forEach(obstacle => {
       //console.log(obstacle.name, obstacle.mtxWorld.translation.z);
-      if (obstacle.mtxWorld.translation.z > -5 &&  obstacle.mtxWorld.translation.z < 5) {
+      if (obstacle.mtxWorld.translation.z > -5 && obstacle.mtxWorld.translation.z < 5) {
         for (const node of obstacle.getIterator()) {
-          if(node.getComponent(ƒ.ComponentRigidbody)){
-             node.removeComponent(node.getComponent(ƒ.ComponentRigidbody));
+          if (node.getComponent(ƒ.ComponentRigidbody)) {
+            node.removeComponent(node.getComponent(ƒ.ComponentRigidbody));
           }
           node.activate(false);
         }
         obstacles.removeChild(obstacle);
-        
+
         //console.log("graph", obstacles);
       }
     });
-    runner.mtxLocal.translation= new ƒ.Vector3(0,0,0);
+    runner.mtxLocal.translation = new ƒ.Vector3(0, 0, -3);
 
+
+  }
+
+  function spawingObstacles(): void {
+    if (lastObstacleSpawnDistance >= obstacleDistance) {
+      let randomObstacle: number = Math.random();
+      if (randomObstacle < 0.33) {
+        instaniateTree();
+      } else if (randomObstacle > 0.66) {
+        instaniateStump();
+      } else {
+        instaniateStone();
+      }
+      //instaniateObstacles()
+      lastObstacleSpawnDistance = 0
+      lastObstacleSpawn = metercount;
+      obstacleDistance -= 0.01;
+    }
+    else lastObstacleSpawnDistance = metercount - lastObstacleSpawn
   }
 }

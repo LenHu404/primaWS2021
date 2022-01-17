@@ -17,8 +17,13 @@ declare namespace Script {
         score: number;
         gameRunning: boolean;
         lapRunning: boolean;
+        health1: boolean;
+        health2: boolean;
+        health3: boolean;
         private constructor();
         static get(): GameState;
+        setHealth(): void;
+        hit(): number;
         protected reduceMutator(_mutator: ƒ.Mutator): void;
     }
 }

@@ -47,6 +47,9 @@ var Script;
             this.score = 0;
             this.gameRunning = false;
             this.lapRunning = false;
+            this.health1 = true;
+            this.health2 = true;
+            this.health3 = true;
             let domHud = document.querySelector("#Hud");
             GameState.instance = this;
             GameState.controller = new ƒui.Controller(this, domHud);
@@ -54,6 +57,43 @@ var Script;
         }
         static get() {
             return GameState.instance || new GameState();
+        }
+        setHealth() {
+            if (this.health1) {
+                document.querySelector("#health1").setAttribute("checked", "");
+            }
+            else {
+                document.querySelector("#health1").removeAttribute("checked");
+            }
+            if (this.health2) {
+                document.querySelector("#health2").setAttribute("checked", "");
+            }
+            else {
+                document.querySelector("#health2").removeAttribute("checked");
+            }
+            if (this.health3) {
+                document.querySelector("#health3").setAttribute("checked", "");
+            }
+            else {
+                document.querySelector("#health3").removeAttribute("checked");
+            }
+        }
+        hit() {
+            if (this.health3) {
+                this.health3 = false;
+                this.setHealth();
+                return 2;
+            }
+            else if (this.health2) {
+                this.health2 = false;
+                this.setHealth();
+                return 1;
+            }
+            else {
+                this.health1 = false;
+                this.setHealth();
+                return 0;
+            }
         }
         reduceMutator(_mutator) { }
     }
@@ -202,6 +242,10 @@ var Script;
     let band;
     let obstacles;
     let metercount = 0;
+    let obstacleDistance = 5;
+    let lastObstacleSpawnDistance = 5;
+    let lastObstacleSpawn = 0;
+    let speed = 1;
     async function start(_event) {
         await ƒ.Project.loadResourcesFromHTML();
         graph = ƒ.Project.resources["Graph|2022-01-06T13:14:39.351Z|61391"];
@@ -236,10 +280,13 @@ var Script;
         if (Script.GameState.get().gameRunning) {
             document.querySelector("#info").setAttribute("hidden", "true");
             //instaniateObstacles();
-            matFloor.mtxPivot.translateX(0.05 * deltaTime);
-            band.mtxLocal.translateZ(-1 * deltaTime);
-            metercount += -1 * deltaTime;
-            Script.GameState.get().score = (-metercount * 100).toFixed(0);
+            matFloor.mtxPivot.translateX(0.075 * deltaTime * speed);
+            band.mtxLocal.translateZ(-1.5 * deltaTime * speed);
+            metercount += 1 * deltaTime * speed;
+            // console.log("metercount", metercount);
+            Script.GameState.get().score = (metercount * 100).toFixed(0);
+            spawingObstacles();
+            speed += 0.0001;
         }
         else if (!Script.GameState.get().gameRunning) {
             startGame();
@@ -248,7 +295,7 @@ var Script;
         if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.E])) {
             instaniateObstacles();
         }
-        //console.log("metercount", metercount);
+        console.log("metercount", metercount);
         //matFloor.mtxPivot.translation.x += 0.01* deltaTime;
         // matFloor.mtxPivot.rotation +=1
         viewport.draw();
@@ -256,32 +303,50 @@ var Script;
     }
     async function instaniateObstacles() {
         let treeBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:44.114Z|12001"];
-        let startPos = new ƒ.Vector3(0, 0, -metercount + 4);
+        let startPos = new ƒ.Vector3(0, 0, metercount + 4);
         let treeInstance = await ƒ.Project.createGraphInstance(treeBlueprint);
         treeInstance.mtxLocal.translation = startPos;
         obstacles.addChild(treeInstance);
         let StoneBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:46.329Z|17331"];
-        startPos = new ƒ.Vector3(3, 0, -metercount + 6);
+        startPos = new ƒ.Vector3(3, 0, metercount + 6);
         let stoneInstance = await ƒ.Project.createGraphInstance(StoneBlueprint);
         stoneInstance.mtxLocal.translation = startPos;
         obstacles.addChild(stoneInstance);
         let treeStumpBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:41.283Z|27993"];
-        startPos = new ƒ.Vector3(-2, 0, -metercount + 15);
+        startPos = new ƒ.Vector3(-2, 0, metercount + 15);
         let treeStumpInstance = await ƒ.Project.createGraphInstance(treeStumpBlueprint);
         treeStumpInstance.mtxLocal.translation = startPos;
         obstacles.addChild(treeStumpInstance);
     }
     async function instaniateTree() {
         let treeBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:44.114Z|12001"];
-        let startPos = new ƒ.Vector3(3, 0, -metercount + 4);
+        let startPos = new ƒ.Vector3(Math.random() * 6 - 3, 0, metercount + 6);
         let treeInstance = await ƒ.Project.createGraphInstance(treeBlueprint);
         treeInstance.mtxLocal.translation = startPos;
         obstacles.addChild(treeInstance);
+    }
+    async function instaniateStone() {
+        let StoneBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:46.329Z|17331"];
+        let startPos = new ƒ.Vector3(Math.random() * 6 - 3, 0, metercount + 6);
+        let stoneInstance = await ƒ.Project.createGraphInstance(StoneBlueprint);
+        stoneInstance.mtxLocal.translation = startPos;
+        obstacles.addChild(stoneInstance);
+    }
+    async function instaniateStump() {
+        let treeStumpBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:41.283Z|27993"];
+        let startPos = new ƒ.Vector3(Math.random() * 4 - 2, 0, metercount + 6);
+        let treeStumpInstance = await ƒ.Project.createGraphInstance(treeStumpBlueprint);
+        treeStumpInstance.mtxLocal.translation = startPos;
+        obstacles.addChild(treeStumpInstance);
     }
     function startGame() {
         if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.SPACE, ƒ.KEYBOARD_CODE.ENTER])) {
             Script.GameState.get().gameRunning = true;
         }
+        Script.GameState.get().health1 = true;
+        Script.GameState.get().health2 = true;
+        Script.GameState.get().health3 = true;
+        Script.GameState.get().setHealth();
     }
     function hndCollision(_event) {
         //console.log("called");
@@ -298,8 +363,14 @@ var Script;
                 node.activate(false);
             }
             obstacles.removeChild(obstacle);
-            //reset();
-            Script.GameState.get().health -= 1;
+            reset();
+            if (Script.GameState.get().hit() == 0) {
+                Script.GameState.get().gameRunning = false;
+                console.log("Score: " + Script.GameState.get().score);
+                Script.GameState.get().score = 0;
+                band.mtxLocal.translation.z = 0;
+                metercount = 0;
+            }
             //console.log( GameState.get().health);
         }
     }
@@ -332,7 +403,27 @@ var Script;
                 //console.log("graph", obstacles);
             }
         });
-        runner.mtxLocal.translation = new ƒ.Vector3(0, 0, 0);
+        runner.mtxLocal.translation = new ƒ.Vector3(0, 0, -3);
+    }
+    function spawingObstacles() {
+        if (lastObstacleSpawnDistance >= obstacleDistance) {
+            let randomObstacle = Math.random();
+            if (randomObstacle < 0.33) {
+                instaniateTree();
+            }
+            else if (randomObstacle > 0.66) {
+                instaniateStump();
+            }
+            else {
+                instaniateStone();
+            }
+            //instaniateObstacles()
+            lastObstacleSpawnDistance = 0;
+            lastObstacleSpawn = metercount;
+            obstacleDistance -= 0.01;
+        }
+        else
+            lastObstacleSpawnDistance = metercount - lastObstacleSpawn;
     }
 })(Script || (Script = {}));
 //# sourceMappingURL=Script.js.map

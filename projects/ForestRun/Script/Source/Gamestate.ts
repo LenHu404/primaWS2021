@@ -10,6 +10,10 @@ namespace Script {
         public score: number = 0;
         public gameRunning: boolean = false;
         public lapRunning: boolean = false;
+        public health1: boolean = true;
+        public health2: boolean = true;
+        public health3: boolean = true;
+
 
 
         private constructor() {
@@ -22,6 +26,44 @@ namespace Script {
 
         public static get(): GameState {
             return GameState.instance || new GameState();
+        }
+
+        public setHealth(): void {
+            if (this.health1) {
+                document.querySelector("#health1").setAttribute("checked","");
+            } else {  
+                document.querySelector("#health1").removeAttribute("checked");
+            }
+            if (this.health2) {
+                document.querySelector("#health2").setAttribute("checked","");
+            } else {  
+                document.querySelector("#health2").removeAttribute("checked");
+            }
+            if (this.health3) {
+                document.querySelector("#health3").setAttribute("checked","");
+            } else {  
+                document.querySelector("#health3").removeAttribute("checked");
+            }
+            
+        }
+
+        public hit(): number {
+            if (this.health3)  {
+                this.health3 = false
+                this.setHealth();
+                return 2;
+            }
+            else if (this.health2) {
+                this.health2 = false
+                this.setHealth();
+                return 1;
+            }
+            else {
+                this.health1 = false
+                this.setHealth();
+                return 0;
+            }
+                
         }
 
         protected reduceMutator(_mutator: ƒ.Mutator): void {/* */ }
