@@ -7,6 +7,8 @@ namespace Script {
         public static readonly iSubclass: number = ƒ.Component.registerSubclass(LaeuferScript);
         // Properties may be mutated by users in the editor via the automatically created user interface
         public message: string = "LaeuferScript added to ";
+        public jumping: boolean = false;
+        public timeStamp: number = 0;
 
         public ctrForward: ƒ.Control = new ƒ.Control("Forward", 1, ƒ.CONTROL_TYPE.PROPORTIONAL)
         public ctrlRotation: ƒ.Control = new ƒ.Control("Rotation", 1, ƒ.CONTROL_TYPE.PROPORTIONAL);
@@ -39,7 +41,15 @@ namespace Script {
         }
 
         public update = (_event: Event) => {
-            this.altMovement(_event);
+            let deltaTime: number = ƒ.Loop.timeFrameReal / 1000;
+            if (GameState.get().gameRunning)
+                this.altMovement(_event);
+            if (this.jumping)
+                this.timeStamp += 1 * deltaTime;
+                this.jump();
+            //console.log("timeStamp", this.timeStamp);
+            //console.log("jumpY", this.jumpFunc(this.timeStamp));
+           // console.log("math: ", Math.pow(0-2,2));
         }
 
         public movement = (_event: Event): void => {
@@ -92,6 +102,13 @@ namespace Script {
 
         public altMovement = (_event: Event) => {
 
+            if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.SPACE]) && !this.jumping) {
+                this.jumping = true;
+                this.jump();
+                console.log("jump!");
+
+            }
+
             let deltaTime: number = ƒ.Loop.timeFrameReal / 1000
 
             let speedAgentTranslation: number = 10; // meters per second
@@ -139,26 +156,42 @@ namespace Script {
 
             let currPos: ƒ.Vector3 = this.node.mtxLocal.translation;
             //console.log(agent.mtxLocal.translation.toString());
-      
+
             if (this.node.mtxLocal.translation.x + this.node.radius > 6) {
-              //console.log("+x");
-              this.node.mtxLocal.translation = new ƒ.Vector3(6 - this.node.radius, currPos.y, currPos.z);
+                //console.log("+x");
+                this.node.mtxLocal.translation = new ƒ.Vector3(6 - this.node.radius, currPos.y, currPos.z);
             }
             if (this.node.mtxLocal.translation.x - this.node.radius < -6) {
-              //console.log("-x");
-              this.node.mtxLocal.translation = new ƒ.Vector3(-6 + this.node.radius, currPos.y, currPos.z);
+                //console.log("-x");
+                this.node.mtxLocal.translation = new ƒ.Vector3(-6 + this.node.radius, currPos.y, currPos.z);
             }
-      
+
             if (this.node.mtxLocal.translation.z + this.node.radius > 6) {
-              //console.log("+z");
-              this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x, currPos.y, 6 - this.node.radius);
+                //console.log("+z");
+                this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x, currPos.y, 6 - this.node.radius);
             }
-            if (this.node.mtxLocal.translation.z - this.node.radius< -10) {
-              //console.log("-z");
-              this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x,currPos.y ,-10+ this.node.radius);
+            if (this.node.mtxLocal.translation.z - this.node.radius < -10) {
+                //console.log("-z");
+                this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x, currPos.y, -10 + this.node.radius);
             }
         }
 
+        public jump(): void {
+            //console.log("timeStamp", this.timeStamp);
+            //console.log("jumpY", this.jumpFunc(this.timeStamp));
+            let currPos: ƒ.Vector3 = this.node.mtxLocal.translation;
+            this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x,this.jumpFunc(this.timeStamp) + 0.5,currPos.z);   
+            if (this.jumpFunc(this.timeStamp) < 0) {
+                this.jumping = false;
+                this.timeStamp = 0;
+            }
+            
+        }
+
+        public jumpFunc(x: number): number {
+            let result: number = -(Math.pow((x*4)-1.41,2)) + 2;
+            return result;
+        }
         // protected reduceMutator(_mutator: ƒ.Mutator): void {
         //   // delete properties that should not be mutated
         //   // undefined properties and private fields (#) will not be included by default

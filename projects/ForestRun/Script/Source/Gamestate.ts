@@ -8,6 +8,7 @@ namespace Script {
         public name: string = "Run Forest Run";
         public health: number = 100;
         public score: number = 0;
+        public hsScore: number = 0;
         public gameRunning: boolean = false;
         public lapRunning: boolean = false;
         public health1: boolean = true;
@@ -30,19 +31,19 @@ namespace Script {
 
         public setHealth(): void {
             if (this.health1) {
-                document.querySelector("#health1").setAttribute("checked","");
+                document.querySelector("#health1").removeAttribute("style");
             } else {  
-                document.querySelector("#health1").removeAttribute("checked");
+                document.querySelector("#health1").setAttribute("style","display:none");
             }
             if (this.health2) {
-                document.querySelector("#health2").setAttribute("checked","");
+                document.querySelector("#health2").removeAttribute("style");
             } else {  
-                document.querySelector("#health2").removeAttribute("checked");
+                document.querySelector("#health2").setAttribute("style","display:none");
             }
             if (this.health3) {
-                document.querySelector("#health3").setAttribute("checked","");
+                document.querySelector("#health3").removeAttribute("style");
             } else {  
-                document.querySelector("#health3").removeAttribute("checked");
+                document.querySelector("#health3").setAttribute("style","display:none");
             }
             
         }

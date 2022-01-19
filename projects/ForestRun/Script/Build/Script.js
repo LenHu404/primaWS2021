@@ -3,6 +3,55 @@ var Script;
 (function (Script) {
     var ƒ = FudgeCore;
     ƒ.Project.registerScriptNamespace(Script); // Register the namespace to FUDGE for serialization
+    let CoinScript = /** @class */ (() => {
+        class CoinScript extends ƒ.ComponentScript {
+            constructor() {
+                super();
+                // Properties may be mutated by users in the editor via the automatically created user interface
+                this.message = "CoinScript added to ";
+                this.timeStamp = 0;
+                // Activate the functions of this component as response to events
+                this.hndEvent = (_event) => {
+                    switch (_event.type) {
+                        case "componentAdd" /* COMPONENT_ADD */:
+                            ƒ.Debug.log(this.message, this.node);
+                            ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, this.update);
+                            break;
+                        case "componentRemove" /* COMPONENT_REMOVE */:
+                            this.removeEventListener("componentAdd" /* COMPONENT_ADD */, this.hndEvent);
+                            this.removeEventListener("componentRemove" /* COMPONENT_REMOVE */, this.hndEvent);
+                            break;
+                    }
+                };
+                this.update = (_event) => {
+                    let deltaTime = ƒ.Loop.timeFrameReal / 1000;
+                    this.node.mtxLocal.rotateY(180 * deltaTime);
+                    this.timeStamp += 1 * deltaTime;
+                    let currPos = this.node.mtxLocal.translation;
+                    this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x, this.sin(this.timeStamp) + 0.5, currPos.z);
+                    //console.log("sin", this.sin(this.timeStamp));
+                };
+                // Don't start when running in editor
+                if (ƒ.Project.mode == ƒ.MODE.EDITOR)
+                    return;
+                // Listen to this component being added to or removed from a node
+                this.addEventListener("componentAdd" /* COMPONENT_ADD */, this.hndEvent);
+                this.addEventListener("componentRemove" /* COMPONENT_REMOVE */, this.hndEvent);
+            }
+            sin(x) {
+                return Math.sin(Math.PI * x) * 0.3;
+            }
+        }
+        // Register the script as component for use in the editor via drag&drop
+        CoinScript.iSubclass = ƒ.Component.registerSubclass(CoinScript);
+        return CoinScript;
+    })();
+    Script.CoinScript = CoinScript;
+})(Script || (Script = {}));
+var Script;
+(function (Script) {
+    var ƒ = FudgeCore;
+    ƒ.Project.registerScriptNamespace(Script); // Register the namespace to FUDGE for serialization
     let CustomComponentScript = /** @class */ (() => {
         class CustomComponentScript extends ƒ.ComponentScript {
             constructor() {
@@ -45,6 +94,7 @@ var Script;
             this.name = "Run Forest Run";
             this.health = 100;
             this.score = 0;
+            this.hsScore = 0;
             this.gameRunning = false;
             this.lapRunning = false;
             this.health1 = true;
@@ -60,22 +110,22 @@ var Script;
         }
         setHealth() {
             if (this.health1) {
-                document.querySelector("#health1").setAttribute("checked", "");
+                document.querySelector("#health1").removeAttribute("style");
             }
             else {
-                document.querySelector("#health1").removeAttribute("checked");
+                document.querySelector("#health1").setAttribute("style", "display:none");
             }
             if (this.health2) {
-                document.querySelector("#health2").setAttribute("checked", "");
+                document.querySelector("#health2").removeAttribute("style");
             }
             else {
-                document.querySelector("#health2").removeAttribute("checked");
+                document.querySelector("#health2").setAttribute("style", "display:none");
             }
             if (this.health3) {
-                document.querySelector("#health3").setAttribute("checked", "");
+                document.querySelector("#health3").removeAttribute("style");
             }
             else {
-                document.querySelector("#health3").removeAttribute("checked");
+                document.querySelector("#health3").setAttribute("style", "display:none");
             }
         }
         hit() {
@@ -109,6 +159,8 @@ var Script;
                 super();
                 // Properties may be mutated by users in the editor via the automatically created user interface
                 this.message = "LaeuferScript added to ";
+                this.jumping = false;
+                this.timeStamp = 0;
                 this.ctrForward = new ƒ.Control("Forward", 1, 0 /* PROPORTIONAL */);
                 this.ctrlRotation = new ƒ.Control("Rotation", 1, 0 /* PROPORTIONAL */);
                 // Activate the functions of this component as response to events
@@ -125,7 +177,15 @@ var Script;
                     }
                 };
                 this.update = (_event) => {
-                    this.altMovement(_event);
+                    let deltaTime = ƒ.Loop.timeFrameReal / 1000;
+                    if (Script.GameState.get().gameRunning)
+                        this.altMovement(_event);
+                    if (this.jumping)
+                        this.timeStamp += 1 * deltaTime;
+                    this.jump();
+                    //console.log("timeStamp", this.timeStamp);
+                    //console.log("jumpY", this.jumpFunc(this.timeStamp));
+                    // console.log("math: ", Math.pow(0-2,2));
                 };
                 this.movement = (_event) => {
                     let deltaTime = ƒ.Loop.timeFrameReal / 1000;
@@ -161,6 +221,11 @@ var Script;
                     }
                 };
                 this.altMovement = (_event) => {
+                    if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.SPACE]) && !this.jumping) {
+                        this.jumping = true;
+                        this.jump();
+                        console.log("jump!");
+                    }
                     let deltaTime = ƒ.Loop.timeFrameReal / 1000;
                     let speedAgentTranslation = 10; // meters per second
                     if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP])) {
@@ -221,6 +286,20 @@ var Script;
                 this.addEventListener("componentAdd" /* COMPONENT_ADD */, this.hndEvent);
                 this.addEventListener("componentRemove" /* COMPONENT_REMOVE */, this.hndEvent);
             }
+            jump() {
+                //console.log("timeStamp", this.timeStamp);
+                //console.log("jumpY", this.jumpFunc(this.timeStamp));
+                let currPos = this.node.mtxLocal.translation;
+                this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x, this.jumpFunc(this.timeStamp) + 0.5, currPos.z);
+                if (this.jumpFunc(this.timeStamp) < 0) {
+                    this.jumping = false;
+                    this.timeStamp = 0;
+                }
+            }
+            jumpFunc(x) {
+                let result = -(Math.pow((x * 4) - 1.41, 2)) + 2;
+                return result;
+            }
         }
         // Register the script as component for use in the editor via drag&drop
         LaeuferScript.iSubclass = ƒ.Component.registerSubclass(LaeuferScript);
@@ -237,15 +316,22 @@ var Script;
     window.addEventListener("load", start);
     let graph;
     let runner;
-    let floor;
-    let matFloor;
+    let floor1;
+    let floor2;
+    let sub1;
+    let sub2;
+    let matFloor1;
+    let matFloor2;
+    let matSub1;
+    let matSub2;
     let band;
     let obstacles;
     let metercount = 0;
     let obstacleDistance = 5;
-    let lastObstacleSpawnDistance = 5;
+    let lastObstacleSpawnDistance = 0;
     let lastObstacleSpawn = 0;
-    let speed = 1;
+    let speed = 4;
+    let startPoint = 30;
     async function start(_event) {
         await ƒ.Project.loadResourcesFromHTML();
         graph = ƒ.Project.resources["Graph|2022-01-06T13:14:39.351Z|61391"];
@@ -259,14 +345,20 @@ var Script;
         let canvas = document.querySelector("canvas");
         viewport = new ƒ.Viewport();
         viewport.initialize("Viewport", graph, cmpCamera, canvas);
-        floor = graph.getChildrenByName("Laufband")[0].getChildrenByName("Boden")[0];
-        matFloor = floor.getComponent(ƒ.ComponentMaterial);
+        floor1 = graph.getChildrenByName("Laufband")[0].getChildrenByName("Boden")[0];
+        floor2 = graph.getChildrenByName("Laufband")[0].getChildrenByName("Boden")[1];
+        sub1 = graph.getChildrenByName("SkyBox")[0].getChildrenByName("WestSub")[0];
+        sub2 = graph.getChildrenByName("SkyBox")[0].getChildrenByName("OstSub")[0];
+        matFloor1 = floor1.getComponent(ƒ.ComponentMaterial);
+        matFloor2 = floor2.getComponent(ƒ.ComponentMaterial);
+        matSub1 = sub1.getComponent(ƒ.ComponentMaterial);
+        matSub2 = sub2.getComponent(ƒ.ComponentMaterial);
         band = graph.getChildrenByName("Laufband")[0].getChildrenByName("Band")[0];
         runner = graph.getChildrenByName("Laeufer")[0];
         obstacles = graph.getChildrenByName("Laufband")[0].getChildrenByName("Band")[0].getChildrenByName("Hindernisse")[0];
         runner.getComponent(ƒ.ComponentRigidbody).addEventListener("TriggerEnteredCollision" /* TRIGGER_ENTER */, hndCollision, true);
         instaniateObstacles();
-        viewport.physicsDebugMode = ƒ.PHYSICS_DEBUGMODE.COLLIDERS;
+        //viewport.physicsDebugMode = ƒ.PHYSICS_DEBUGMODE.COLLIDERS;
         ƒ.Physics.adjustTransforms(graph);
         ƒ.AudioManager.default.listenTo(graph);
         ƒ.AudioManager.default.listenWith(graph.getComponent(ƒ.ComponentAudioListener));
@@ -276,15 +368,18 @@ var Script;
     function update(_event) {
         let deltaTime = ƒ.Loop.timeFrameReal / 1000;
         ƒ.Physics.world.simulate(Math.min(0.1, deltaTime)); // if physics is included and used
-        deleteUnseemObstacle();
+        deleteUnseenObstacle();
         if (Script.GameState.get().gameRunning) {
             document.querySelector("#info").setAttribute("hidden", "true");
             //instaniateObstacles();
-            matFloor.mtxPivot.translateX(0.075 * deltaTime * speed);
+            matFloor1.mtxPivot.translateX(0.075 * deltaTime * speed);
+            matFloor2.mtxPivot.translateX(0.075 * deltaTime * speed);
+            matSub1.mtxPivot.translateX(0.025 * deltaTime * speed);
+            matSub2.mtxPivot.translateX(-0.025 * deltaTime * speed);
             band.mtxLocal.translateZ(-1.5 * deltaTime * speed);
             metercount += 1.5 * deltaTime * speed;
-            // console.log("metercount", metercount);
-            Script.GameState.get().score = (metercount * 100).toFixed(0);
+            //console.log("metercount", metercount);
+            Script.GameState.get().score += 1;
             spawingObstacles();
             speed += 0.0001;
         }
@@ -295,7 +390,7 @@ var Script;
         if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.E])) {
             instaniateObstacles();
         }
-        console.log("metercount", metercount);
+        //console.log("metercount", metercount);
         //matFloor.mtxPivot.translation.x += 0.01* deltaTime;
         // matFloor.mtxPivot.rotation +=1
         viewport.draw();
@@ -320,33 +415,50 @@ var Script;
     }
     async function instaniateTree() {
         let treeBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:44.114Z|12001"];
-        let startPos = new ƒ.Vector3(Math.random() * 6 - 3, 0, metercount + 6);
+        let startPos = new ƒ.Vector3(Math.random() * 6 - 3, 0, metercount + startPoint);
         let treeInstance = await ƒ.Project.createGraphInstance(treeBlueprint);
         treeInstance.mtxLocal.translation = startPos;
+        treeInstance.mtxLocal.rotateY(Math.random() * 360);
         obstacles.addChild(treeInstance);
     }
     async function instaniateStone() {
         let StoneBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:46.329Z|17331"];
-        let startPos = new ƒ.Vector3(Math.random() * 6 - 3, 0, metercount + 6);
+        let startPos = new ƒ.Vector3(Math.random() * 6 - 3, 0, metercount + startPoint);
         let stoneInstance = await ƒ.Project.createGraphInstance(StoneBlueprint);
         stoneInstance.mtxLocal.translation = startPos;
+        stoneInstance.mtxLocal.rotateY(Math.random() * 360);
         obstacles.addChild(stoneInstance);
     }
     async function instaniateStump() {
         let treeStumpBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:41.283Z|27993"];
-        let startPos = new ƒ.Vector3(Math.random() * 4 - 2, 0, metercount + 6);
+        let startPos = new ƒ.Vector3(Math.random() * 4 - 2, 0, metercount + startPoint);
         let treeStumpInstance = await ƒ.Project.createGraphInstance(treeStumpBlueprint);
         treeStumpInstance.mtxLocal.translation = startPos;
+        treeStumpInstance.mtxLocal.rotateY(Math.random() * 360);
         obstacles.addChild(treeStumpInstance);
     }
+    async function instaniateCoin() {
+        let CoinBlueprint = FudgeCore.Project.resources["Graph|2022-01-18T14:20:00.545Z|93108"];
+        let startPos = new ƒ.Vector3(Math.random() * 4 - 3, 0, metercount + startPoint);
+        let CoinInstance = await ƒ.Project.createGraphInstance(CoinBlueprint);
+        CoinInstance.mtxLocal.translation = startPos;
+        CoinInstance.mtxLocal.rotateY(Math.random() * 360);
+        obstacles.addChild(CoinInstance);
+    }
     function startGame() {
-        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.SPACE, ƒ.KEYBOARD_CODE.ENTER])) {
+        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ENTER])) {
             Script.GameState.get().gameRunning = true;
+            Script.GameState.get().score = 0;
+            Script.GameState.get().health1 = true;
+            Script.GameState.get().health2 = true;
+            Script.GameState.get().health3 = true;
+            Script.GameState.get().setHealth();
+            obstacleDistance = 5;
+            band.mtxLocal.translation = new ƒ.Vector3(0, 0, 0);
+            metercount = 0;
+            lastObstacleSpawnDistance = 0;
+            lastObstacleSpawn = 0;
         }
-        Script.GameState.get().health1 = true;
-        Script.GameState.get().health2 = true;
-        Script.GameState.get().health3 = true;
-        Script.GameState.get().setHealth();
     }
     function hndCollision(_event) {
         //console.log("called");
@@ -363,18 +475,24 @@ var Script;
                 node.activate(false);
             }
             obstacles.removeChild(obstacle);
-            reset();
-            if (Script.GameState.get().hit() == 0) {
-                Script.GameState.get().gameRunning = false;
-                console.log("Score: " + Script.GameState.get().score);
-                Script.GameState.get().score = 0;
-                band.mtxLocal.translation.z = 0;
-                metercount = 0;
+            if (obstacle.name == "Coin") {
+                console;
+                Script.GameState.get().score += 10000;
+            }
+            else {
+                reset();
+                if (Script.GameState.get().hit() == 0) {
+                    Script.GameState.get().gameRunning = false;
+                    console.log("Score: " + Script.GameState.get().score);
+                    if (Script.GameState.get().score > Script.GameState.get().hsScore) {
+                        Script.GameState.get().hsScore = Script.GameState.get().score;
+                    }
+                }
             }
             //console.log( GameState.get().health);
         }
     }
-    function deleteUnseemObstacle() {
+    function deleteUnseenObstacle() {
         obstacles.getChildren().forEach(obstacle => {
             //console.log(obstacle.name, obstacle.mtxWorld.translation.z);
             if (obstacle.mtxWorld.translation.z < -10) {
@@ -403,15 +521,15 @@ var Script;
                 //console.log("graph", obstacles);
             }
         });
-        runner.mtxLocal.translation = new ƒ.Vector3(0, 0, -3);
+        runner.mtxLocal.translation = new ƒ.Vector3(0, 0.5, -3);
     }
     function spawingObstacles() {
         if (lastObstacleSpawnDistance >= obstacleDistance) {
             let randomObstacle = Math.random();
-            if (randomObstacle < 0.1) {
+            if (randomObstacle < 0.3) {
                 instaniateTree();
             }
-            else if (randomObstacle > 0.9) {
+            else if (randomObstacle > 0.8) {
                 instaniateStump();
             }
             else {
@@ -420,10 +538,18 @@ var Script;
             //instaniateObstacles()
             lastObstacleSpawnDistance = 0;
             lastObstacleSpawn = metercount;
-            obstacleDistance -= 0.01;
+            if (obstacleDistance > 1)
+                obstacleDistance -= 0.01;
         }
         else
             lastObstacleSpawnDistance = metercount - lastObstacleSpawn;
+        if (Math.random() > 0.9) {
+            if (Math.random() > 0.9) {
+                if (Math.random() > 0.9) {
+                    instaniateCoin();
+                }
+            }
+        }
     }
 })(Script || (Script = {}));
 //# sourceMappingURL=Script.js.map

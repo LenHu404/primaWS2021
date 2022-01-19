@@ -9,7 +9,7 @@
     <!--Editor settings of this project-->
     <meta type="settings" autoview="Graph|2022-01-06T13:14:39.351Z|61391"
         project="{'name':'ForestRun','includeAutoViewScript':false,'graphAutoView':'Graph|2022-01-06T13:14:39.351Z|61391'}"
-        panels="[{'type':'PanelProject','state':{}},{'type':'PanelGraph','state':{'graph':'Graph|2022-01-11T13:55:44.114Z|12001'}}]" />
+        panels="[{'type':'PanelProject','state':{}},{'type':'PanelGraph','state':{'graph':'Graph|2022-01-06T13:14:39.351Z|61391'}}]" />
 
     <!--Activate the following line to include the FUDGE-version of Oimo-Physics. You may want to download a local copy to work offline and be independent from future changes!-->
     <script type="text/javascript" src="../../FudgePhysics/OimoPhysics.js"></script>
@@ -39,14 +39,39 @@
     <div id="Hud">
         <div class="Hud" id="topBar">
             <input type="text" key="name" value="Name" disabled="" /> <br />
-            Health <input type="radio" key="health1" id="health1" checked/>
-            <input type="radio" key="health2" id="health2"checked/>
-            <input type="radio" key="health3" id="health3"checked/>
+            Health <div id="health">
+                <div class="health">
+                    <div class="healthBg">
+                        <div class="healthBar" id="health1">
+                        </div>
+                    </div>
+                </div>
+                <div class="health">
+                    <div class="healthBg">
+                        <div class="healthBar" id="health2">
+                        </div>
+                    </div>
+                </div>
+                <div class="health">
+                    <div class="healthBg">
+                        <div class="healthBar" id="health3">
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             Score <input type="number" key="score" min="0" max="3000000" value="0" disabled="" />
+            Highscore <input type="number" key="hsScore" min="0" max="3000000" value="0" disabled="" />
         </div>
     </div>
-    <h1 id="info"> Try to to survive as long as possible! <br /> Press Enter or Space to start the Game </h1>
+    <h1 id="info"> Try to to survive as long as possible! <br /> Press Enter to start the Game </h1>
+
+
+
+
+
+
+
 
 
 

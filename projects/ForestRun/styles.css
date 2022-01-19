@@ -13,16 +13,16 @@ html, body {
   margin: 0px;
   width: 100%;
   height: 100%;
- overflow: hidden;
+  overflow: hidden;
 }
 
-dialog { 
-  text-align: center; 
+dialog {
+  text-align: center;
 }
 
-canvas.fullscreen { 
-  width: 100vw; 
-  height: 100vh; 
+canvas.fullscreen {
+  width: 100vw;
+  height: 100vh;
 }
 
 div#Hud {
@@ -34,6 +34,10 @@ div#Hud {
   font-size: 22px;
   padding: 10pt;
   border-bottom-right-radius: 10pt;
+}
+
+#health {
+  display: flex;
 }
 
 input[type=text] {
@@ -53,34 +57,27 @@ input[type=number] {
   margin-top: 6px;
 }
 
-input[type=range]::-webkit-slider-runnable-track {
-  height: 16px;
-  box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
-  background: #034e0d;
-  border-radius: 5px;
-  border: 0.2px solid #06b46c;
-}
-input[type="radio"] {
-  /* Add if not using autoprefixer */
-  -webkit-appearance: none;
-  /* Remove most all native input styles */
-  appearance: none;
-  /* For iOS < 15 */
-  background-color: var(--form-background);
-  /* Not removed via appearance */
-  margin: 0;
+/* input[type="radio"] {
+  // Add if not using autoprefixer 
+-webkit-appearance: none;
+// Remove most all native input styles 
+appearance: none;
+// For iOS < 15 
+background-color: var(--form-background);
+// Not removed via appearance 
+margin: 0;
 
-  font: inherit;
-  color: green;
-  width: 1.15em;
-  height: 1.15em;
-  border: 0.15em solid currentColor;
-  border-radius: 50%;
-  transform: translateY(+0.25em);
-  margin: 0.1em;
+font: inherit;
+color: green;
+width: 1.15em;
+height: 1.15em;
+border: 0.15em solid currentColor;
+border-radius: 50%;
+transform: translateY(+0.25em);
+margin: 0.1em;
 
-  display: grid;
-  place-content: center;
+display: grid;
+place-content: center;
 }
 
 input[type="radio"]::before {
@@ -91,7 +88,7 @@ input[type="radio"]::before {
   transform: scale(0);
   transition: 120ms transform ease-in-out;
   box-shadow: inset 1em 1em var(--form-control-color);
-  /* Windows High Contrast Mode */
+  Windows High Contrast Mode
   background-color: CanvasText;
 }
 
@@ -103,6 +100,41 @@ input[type="radio"]:focus {
   outline: max(2px, 0.15em) solid currentColor;
   outline-offset: max(2px, 0.15em);
 }
+
+*/
+.health {
+  border-radius: 50%;
+  width: 28px;
+  height: 28px;
+  background-color: rgb(36, 167, 64);
+  color: #42d856;
+  position: relative;
+  margin: 4px;
+  display: flex;
+}
+
+.healthBg {
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  background-color: rgb(0, 0, 0);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.healthBar {
+  border-radius: 50%;
+  width: 16px;
+  height: 16px;
+  background-color: rgb(103, 55, 134);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
 #info {
   position: absolute;
   top: 50%;
@@ -111,6 +143,9 @@ input[type="radio"]:focus {
   font-family: monospace;
   font-size: 5vh;
   background-color: rgb(56, 56, 56);
+  border: 5px solid;
+  border-radius: 25px;
+  border-color: rgb(93, 212, 172);
   color: rgb(93, 212, 172);
   padding: 2vh;
   text-align: center;
