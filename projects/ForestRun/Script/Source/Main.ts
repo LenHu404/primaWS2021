@@ -91,7 +91,10 @@ namespace Script {
     runner.getComponent(ƒ.ComponentRigidbody).addEventListener(ƒ.EVENT_PHYSICS.TRIGGER_ENTER, hndCollision, true)
     //dataFile = new Datafile();
     //dataFile.getData();
-    GameState.get().hScore = JSON.parse(localStorage.getItem("HScore"));
+    if (localStorage.getItem("HScore")) {
+      GameState.get().hScore = JSON.parse(localStorage.getItem("HScore"));
+      console.log("lol", GameState.get().hScore);
+    }
 
     moving = MoveState.forward;
     //instaniateObstacles();
@@ -119,7 +122,7 @@ namespace Script {
       band.mtxLocal.translateZ(-1.5 * deltaTime * speed);
       metercount += 1.5 * deltaTime * speed;
       timeStamp += 1 * deltaTime;
-      console.log("timestamp", metercount);
+      //console.log("timestamp", metercount);
       animation();
       GameState.get().score += 1;
       spawingObstacles();
@@ -279,9 +282,10 @@ namespace Script {
           GameState.get().gameRunning = false;
           console.log("Score: " + GameState.get().score)
           //dataFile.save();
-          localStorage.setItem("HScore", JSON.stringify(GameState.get().score));
           if (GameState.get().score > GameState.get().hScore) {
             GameState.get().hScore = GameState.get().score;
+            localStorage.setItem("HScore", JSON.stringify(GameState.get().score));
+
           }
         }
       }
@@ -380,9 +384,9 @@ namespace Script {
   function animation(): void {
     let rotation: number = map_range(sin(timeStamp), 1, 0, -50, 0);
     if (moving == MoveState.forward) {
-      console.log("timestamp", timeStamp);
-      console.log("sin", sin(timeStamp));
-      console.log("rotation: ", rotation);
+      //console.log("timestamp", timeStamp);
+      //console.log("sin", sin(timeStamp));
+      //console.log("rotation: ", rotation);
       lLeg.mtxLocal.rotation = new ƒ.Vector3(rotation, 0, 0);
       rLeg.mtxLocal.rotation = new ƒ.Vector3(-rotation, 0, 0);
       lArm.mtxLocal.rotation = new ƒ.Vector3(-rotation, 0, 0);
