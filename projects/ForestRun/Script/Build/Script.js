@@ -87,6 +87,37 @@ var Script;
 var Script;
 (function (Script) {
     var ƒ = FudgeCore;
+    ƒ.Project.registerScriptNamespace(Script); // Register the namespace to FUDGE for serialization
+    class Datafile {
+        constructor() {
+            this.getData();
+        }
+        save() {
+            let data = {
+                "hscore": Script.GameState.get().hScore
+            };
+            let jdata = JSON.stringify(data);
+            fs_1.default.writeFile('data.json', jdata, (err) => {
+                if (err) {
+                    throw err;
+                }
+                console.log("JSON data is saved.");
+            });
+        }
+        getData() {
+            fs_1.default.readFile('data.json', 'utf-8', (err, data) => {
+                if (err) {
+                    throw err;
+                }
+                Script.GameState.get().hScore = JSON.parse(data.toString());
+            });
+        }
+    }
+    Script.Datafile = Datafile;
+})(Script || (Script = {}));
+var Script;
+(function (Script) {
+    var ƒ = FudgeCore;
     var ƒui = FudgeUserInterface;
     class GameState extends ƒ.Mutable {
         constructor() {
@@ -94,7 +125,7 @@ var Script;
             this.name = "Run Forest Run";
             this.health = 100;
             this.score = 0;
-            this.hsScore = 0;
+            this.hScore = 0;
             this.gameRunning = false;
             this.lapRunning = false;
             this.health1 = true;
@@ -153,6 +184,12 @@ var Script;
 (function (Script) {
     var ƒ = FudgeCore;
     ƒ.Project.registerScriptNamespace(Script); // Register the namespace to FUDGE for serialization
+    let MoveState;
+    (function (MoveState) {
+        MoveState[MoveState["forward"] = 0] = "forward";
+        MoveState[MoveState["backwards"] = 1] = "backwards";
+        MoveState[MoveState["idle"] = 2] = "idle";
+    })(MoveState || (MoveState = {}));
     let LaeuferScript = /** @class */ (() => {
         class LaeuferScript extends ƒ.ComponentScript {
             constructor() {
@@ -168,6 +205,7 @@ var Script;
                     switch (_event.type) {
                         case "componentAdd" /* COMPONENT_ADD */:
                             ƒ.Debug.log(this.message, this.node);
+                            //this.start();
                             ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, this.update);
                             break;
                         case "componentRemove" /* COMPONENT_REMOVE */:
@@ -187,38 +225,15 @@ var Script;
                     //console.log("jumpY", this.jumpFunc(this.timeStamp));
                     // console.log("math: ", Math.pow(0-2,2));
                 };
-                this.movement = (_event) => {
-                    let deltaTime = ƒ.Loop.timeFrameReal / 1000;
-                    let speedAgentTranslation = 10; // meters per second
-                    let speedAgentRotation = 360; // meters per second
-                    let speedValue = (ƒ.Keyboard.mapToValue(1, 0, [ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP])
-                        + ƒ.Keyboard.mapToValue(-1, 0, [ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN]));
-                    this.ctrForward.setInput(speedValue * deltaTime);
-                    this.node.mtxLocal.translateX(this.ctrForward.getOutput() * speedAgentTranslation);
-                    let rotationValue = (ƒ.Keyboard.mapToValue(-1, 0, [ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]))
-                        + (ƒ.Keyboard.mapToValue(1, 0, [ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT]));
-                    this.ctrlRotation.setInput(rotationValue * deltaTime);
-                    this.node.mtxLocal.rotateY(this.ctrlRotation.getOutput() * speedAgentRotation);
-                    let agentRadius = this.node.getComponent(ƒ.ComponentMesh).mtxPivot.scaling.x / 2;
-                    //let groundScale: ƒ.Vector2 = new ƒ.Vector2()
-                    let currPos = this.node.mtxLocal.translation;
-                    //console.log(agent.mtxLocal.translation.toString());
-                    if (this.node.mtxLocal.translation.x + agentRadius > 24.5) {
-                        //console.log("+x");
-                        this.node.mtxLocal.translation = new ƒ.Vector3(-24.5 + agentRadius, currPos.y, currPos.z);
-                    }
-                    if (this.node.mtxLocal.translation.x - agentRadius < -24.5) {
-                        //console.log("-x");
-                        this.node.mtxLocal.translation = new ƒ.Vector3(24.5 - agentRadius, currPos.y, currPos.z);
-                    }
-                    if (this.node.mtxLocal.translation.y + agentRadius > 14.75) {
-                        //console.log("+y");
-                        this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x, -14.75 + agentRadius, currPos.z);
-                    }
-                    if (this.node.mtxLocal.translation.y - agentRadius < -14.75) {
-                        //console.log("-y");
-                        this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x, 14.75 - agentRadius, currPos.z);
-                    }
+                this.start = () => {
+                    console.log("name ", this.node);
+                    this.body = this.node.getChild(0);
+                    console.log("name ", this.body);
+                    this.head = this.node.getChildrenByName("body")[0].getChildrenByName("head")[0];
+                    this.lLeg = this.node.getChildrenByName("body")[0].getChildrenByName("lLeg")[0];
+                    this.rLeg = this.node.getChildrenByName("body")[0].getChildrenByName("rLeg")[0];
+                    this.lArm = this.node.getChildrenByName("body")[0].getChildrenByName("lArm")[0];
+                    this.rArm = this.node.getChildrenByName("body")[0].getChildrenByName("rArm")[0];
                 };
                 this.altMovement = (_event) => {
                     if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.SPACE]) && !this.jumping) {
@@ -227,22 +242,30 @@ var Script;
                         console.log("jump!");
                     }
                     let deltaTime = ƒ.Loop.timeFrameReal / 1000;
-                    let speedAgentTranslation = 10; // meters per second
+                    let speedAgentTranslation = 10;
                     if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP])) {
                         if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]) || ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT])) {
                             this.node.mtxLocal.translateZ((speedAgentTranslation * deltaTime * 2) / 3);
                         }
                         else {
                             this.node.mtxLocal.translateZ(speedAgentTranslation * deltaTime);
+                            this.node.mtxLocal.rotation = new ƒ.Vector3(0, 0, 0);
                         }
+                        this.moving = MoveState.forward;
                     }
-                    if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN])) {
+                    else if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN])) {
                         if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT]) || ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT])) {
                             this.node.mtxLocal.translateZ((-speedAgentTranslation * deltaTime * 2) / 3);
                         }
                         else {
                             this.node.mtxLocal.translateZ(-speedAgentTranslation * deltaTime);
+                            this.node.mtxLocal.rotation = new ƒ.Vector3(0, 0, 0);
                         }
+                        this.moving = MoveState.backwards;
+                    }
+                    else {
+                        this.node.mtxLocal.rotation = new ƒ.Vector3(0, 0, 0);
+                        this.moving = MoveState.idle;
                     }
                     if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.D, ƒ.KEYBOARD_CODE.ARROW_RIGHT])) {
                         if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP]) || ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN])) {
@@ -251,6 +274,7 @@ var Script;
                         else {
                             this.node.mtxLocal.translateX(-speedAgentTranslation * deltaTime);
                         }
+                        this.node.mtxLocal.rotation = new ƒ.Vector3(0, -30, 0);
                     }
                     if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.A, ƒ.KEYBOARD_CODE.ARROW_LEFT])) {
                         if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.W, ƒ.KEYBOARD_CODE.ARROW_UP]) || ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.S, ƒ.KEYBOARD_CODE.ARROW_DOWN])) {
@@ -259,6 +283,7 @@ var Script;
                         else {
                             this.node.mtxLocal.translateX(speedAgentTranslation * deltaTime);
                         }
+                        this.node.mtxLocal.rotation = new ƒ.Vector3(0, 30, 0);
                     }
                     let currPos = this.node.mtxLocal.translation;
                     //console.log(agent.mtxLocal.translation.toString());
@@ -290,7 +315,7 @@ var Script;
                 //console.log("timeStamp", this.timeStamp);
                 //console.log("jumpY", this.jumpFunc(this.timeStamp));
                 let currPos = this.node.mtxLocal.translation;
-                this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x, this.jumpFunc(this.timeStamp) + 0.5, currPos.z);
+                this.node.mtxLocal.translation = new ƒ.Vector3(currPos.x, this.jumpFunc(this.timeStamp) + 0.75, currPos.z);
                 if (this.jumpFunc(this.timeStamp) < 0) {
                     this.jumping = false;
                     this.timeStamp = 0;
@@ -299,6 +324,21 @@ var Script;
             jumpFunc(x) {
                 let result = -(Math.pow((x * 4) - 1.41, 2)) + 2;
                 return result;
+            }
+            sin(x) {
+                return Math.sin(Math.PI * x);
+            }
+            animation() {
+                let rotation = this.map_range(this.sin(this.timeStamp), 1, 0, -20, 20);
+                if (this.moving == MoveState.forward) {
+                    this.lLeg.mtxLocal.rotation = new ƒ.Vector3(rotation, 0, 0);
+                    this.rLeg.mtxLocal.rotation = new ƒ.Vector3(-rotation, 0, 0);
+                    this.lArm.mtxLocal.rotation = new ƒ.Vector3(-rotation, 0, 0);
+                    this.rArm.mtxLocal.rotation = new ƒ.Vector3(rotation, 0, 0);
+                }
+            }
+            map_range(v, from_min, from_max, to_min, to_max) {
+                return to_min + (v - from_min) * (to_max - to_min) / (from_max - from_min);
             }
         }
         // Register the script as component for use in the editor via drag&drop
@@ -311,6 +351,12 @@ var Script;
 (function (Script) {
     var ƒ = FudgeCore;
     ƒ.Debug.info("Main Program Template running!");
+    let MoveState;
+    (function (MoveState) {
+        MoveState[MoveState["forward"] = 0] = "forward";
+        MoveState[MoveState["backwards"] = 1] = "backwards";
+        MoveState[MoveState["idle"] = 2] = "idle";
+    })(MoveState || (MoveState = {}));
     let viewport;
     document.addEventListener("interactiveViewportStarted", start);
     window.addEventListener("load", start);
@@ -332,14 +378,26 @@ var Script;
     let lastObstacleSpawn = 0;
     let speed = 4;
     let startPoint = 30;
+    let body;
+    //let head: ƒ.Node;
+    let lLeg;
+    let rLeg;
+    let lArm;
+    let rArm;
+    let moving;
+    let timeStamp = 0;
+    //let dataFile : Datafile;
     async function start(_event) {
         await ƒ.Project.loadResourcesFromHTML();
         graph = ƒ.Project.resources["Graph|2022-01-06T13:14:39.351Z|61391"];
         let cmpCamera = new ƒ.ComponentCamera();
-        cmpCamera.mtxPivot.rotateY(25);
+        //cmpCamera.mtxPivot.rotateY(25);
+        //cmpCamera.mtxPivot.translateZ(-17);
+        //cmpCamera.mtxPivot.translateY(5);
+        //cmpCamera.mtxPivot.translateX(2);
+        cmpCamera.mtxPivot.translateY(8);
         cmpCamera.mtxPivot.translateZ(-17);
-        cmpCamera.mtxPivot.translateY(5);
-        cmpCamera.mtxPivot.translateX(2);
+        cmpCamera.mtxPivot.rotateX(13);
         cmpCamera.mtxPivot.rotateX(10);
         graph.addComponent(cmpCamera);
         let canvas = document.querySelector("canvas");
@@ -354,10 +412,22 @@ var Script;
         matSub1 = sub1.getComponent(ƒ.ComponentMaterial);
         matSub2 = sub2.getComponent(ƒ.ComponentMaterial);
         band = graph.getChildrenByName("Laufband")[0].getChildrenByName("Band")[0];
-        runner = graph.getChildrenByName("Laeufer")[0];
+        runner = graph.getChildrenByName("runner")[0];
+        //console.log("name ", this.node);
+        body = runner.getChildrenByName("body")[0];
+        //console.log("name ", this.body);
+        //head = body.getChildrenByName("head")[0];
+        lLeg = body.getChildrenByName("lLeg")[0];
+        rLeg = body.getChildrenByName("rLeg")[0];
+        lArm = body.getChildrenByName("lArm")[0];
+        rArm = body.getChildrenByName("rArm")[0];
         obstacles = graph.getChildrenByName("Laufband")[0].getChildrenByName("Band")[0].getChildrenByName("Hindernisse")[0];
         runner.getComponent(ƒ.ComponentRigidbody).addEventListener("TriggerEnteredCollision" /* TRIGGER_ENTER */, hndCollision, true);
-        instaniateObstacles();
+        //dataFile = new Datafile();
+        //dataFile.getData();
+        Script.GameState.get().hScore = JSON.parse(localStorage.getItem("HScore"));
+        moving = MoveState.forward;
+        //instaniateObstacles();
         //viewport.physicsDebugMode = ƒ.PHYSICS_DEBUGMODE.COLLIDERS;
         ƒ.Physics.adjustTransforms(graph);
         ƒ.AudioManager.default.listenTo(graph);
@@ -378,10 +448,12 @@ var Script;
             matSub2.mtxPivot.translateX(-0.025 * deltaTime * speed);
             band.mtxLocal.translateZ(-1.5 * deltaTime * speed);
             metercount += 1.5 * deltaTime * speed;
-            //console.log("metercount", metercount);
+            timeStamp += 1 * deltaTime;
+            console.log("timestamp", metercount);
+            animation();
             Script.GameState.get().score += 1;
             spawingObstacles();
-            speed += 0.0001;
+            speed += 0.001;
         }
         else if (!Script.GameState.get().gameRunning) {
             startGame();
@@ -458,6 +530,7 @@ var Script;
             metercount = 0;
             lastObstacleSpawnDistance = 0;
             lastObstacleSpawn = 0;
+            speed = 4;
         }
     }
     function hndCollision(_event) {
@@ -484,8 +557,10 @@ var Script;
                 if (Script.GameState.get().hit() == 0) {
                     Script.GameState.get().gameRunning = false;
                     console.log("Score: " + Script.GameState.get().score);
-                    if (Script.GameState.get().score > Script.GameState.get().hsScore) {
-                        Script.GameState.get().hsScore = Script.GameState.get().score;
+                    //dataFile.save();
+                    localStorage.setItem("HScore", JSON.stringify(Script.GameState.get().score));
+                    if (Script.GameState.get().score > Script.GameState.get().hScore) {
+                        Script.GameState.get().hScore = Script.GameState.get().score;
                     }
                 }
             }
@@ -493,6 +568,20 @@ var Script;
         }
     }
     function deleteUnseenObstacle() {
+        obstacles.getChildren().forEach(obstacle => {
+            //console.log(obstacle.name, obstacle.mtxWorld.translation.z);
+            if (obstacle.mtxWorld.translation.z < -4) {
+                for (const node of obstacle.getIterator()) {
+                    if (node.getComponent(ƒ.ComponentMaterial)) {
+                        node.getComponent(ƒ.ComponentMaterial).sortForAlpha = true;
+                        node.getComponent(ƒ.ComponentMaterial).material;
+                    }
+                    node.activate(false);
+                }
+                obstacles.removeChild(obstacle);
+                //console.log("graph", obstacles);
+            }
+        });
         obstacles.getChildren().forEach(obstacle => {
             //console.log(obstacle.name, obstacle.mtxWorld.translation.z);
             if (obstacle.mtxWorld.translation.z < -10) {
@@ -510,7 +599,7 @@ var Script;
     function reset() {
         obstacles.getChildren().forEach(obstacle => {
             //console.log(obstacle.name, obstacle.mtxWorld.translation.z);
-            if (obstacle.mtxWorld.translation.z > -5 && obstacle.mtxWorld.translation.z < 5) {
+            if (obstacle.mtxWorld.translation.z > -5 && obstacle.mtxWorld.translation.z < 15) {
                 for (const node of obstacle.getIterator()) {
                     if (node.getComponent(ƒ.ComponentRigidbody)) {
                         node.removeComponent(node.getComponent(ƒ.ComponentRigidbody));
@@ -521,7 +610,7 @@ var Script;
                 //console.log("graph", obstacles);
             }
         });
-        runner.mtxLocal.translation = new ƒ.Vector3(0, 0.5, -3);
+        runner.mtxLocal.translation = new ƒ.Vector3(0, 0.75, -3);
     }
     function spawingObstacles() {
         if (lastObstacleSpawnDistance >= obstacleDistance) {
@@ -538,7 +627,7 @@ var Script;
             //instaniateObstacles()
             lastObstacleSpawnDistance = 0;
             lastObstacleSpawn = metercount;
-            if (obstacleDistance > 1)
+            if (obstacleDistance > 2.5)
                 obstacleDistance -= 0.01;
         }
         else
@@ -550,6 +639,24 @@ var Script;
                 }
             }
         }
+    }
+    function sin(x) {
+        return Math.sin(7 * x);
+    }
+    function animation() {
+        let rotation = map_range(sin(timeStamp), 1, 0, -50, 0);
+        if (moving == MoveState.forward) {
+            console.log("timestamp", timeStamp);
+            console.log("sin", sin(timeStamp));
+            console.log("rotation: ", rotation);
+            lLeg.mtxLocal.rotation = new ƒ.Vector3(rotation, 0, 0);
+            rLeg.mtxLocal.rotation = new ƒ.Vector3(-rotation, 0, 0);
+            lArm.mtxLocal.rotation = new ƒ.Vector3(-rotation, 0, 0);
+            rArm.mtxLocal.rotation = new ƒ.Vector3(rotation, 0, 0);
+        }
+    }
+    function map_range(v, from_min, from_max, to_min, to_max) {
+        return to_min + (v - from_min) * (to_max - to_min) / (from_max - from_min);
     }
 })(Script || (Script = {}));
 //# sourceMappingURL=Script.js.map

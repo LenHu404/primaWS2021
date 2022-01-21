@@ -8,7 +8,7 @@ namespace Script {
         public name: string = "Run Forest Run";
         public health: number = 100;
         public score: number = 0;
-        public hsScore: number = 0;
+        public hScore: number = 0;
         public gameRunning: boolean = false;
         public lapRunning: boolean = false;
         public health1: boolean = true;
