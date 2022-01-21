@@ -568,20 +568,20 @@ var Script;
         }
     }
     function deleteUnseenObstacle() {
-        obstacles.getChildren().forEach(obstacle => {
-            //console.log(obstacle.name, obstacle.mtxWorld.translation.z);
-            if (obstacle.mtxWorld.translation.z < -4) {
-                for (const node of obstacle.getIterator()) {
-                    if (node.getComponent(ƒ.ComponentMaterial)) {
-                        node.getComponent(ƒ.ComponentMaterial).sortForAlpha = true;
-                        node.getComponent(ƒ.ComponentMaterial).material;
-                    }
-                    node.activate(false);
-                }
-                obstacles.removeChild(obstacle);
-                //console.log("graph", obstacles);
+        /* obstacles.getChildren().forEach(obstacle => {
+          //console.log(obstacle.name, obstacle.mtxWorld.translation.z);
+          if (obstacle.mtxWorld.translation.z < -4) {
+            for (const node of obstacle.getIterator()) {
+              if (node.getComponent(ƒ.ComponentMaterial)) {
+                node.getComponent(ƒ.ComponentMaterial).sortForAlpha = true;
+                node.getComponent(ƒ.ComponentMaterial).material;
+              }
+              node.activate(false);
             }
-        });
+            obstacles.removeChild(obstacle);
+            //console.log("graph", obstacles);
+          }
+        }); */
         obstacles.getChildren().forEach(obstacle => {
             //console.log(obstacle.name, obstacle.mtxWorld.translation.z);
             if (obstacle.mtxWorld.translation.z < -10) {

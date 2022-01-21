@@ -293,7 +293,7 @@ namespace Script {
 
   function deleteUnseenObstacle(): void {
 
-    obstacles.getChildren().forEach(obstacle => {
+    /* obstacles.getChildren().forEach(obstacle => {
       //console.log(obstacle.name, obstacle.mtxWorld.translation.z);
       if (obstacle.mtxWorld.translation.z < -4) {
         for (const node of obstacle.getIterator()) {
@@ -306,7 +306,7 @@ namespace Script {
         obstacles.removeChild(obstacle);
         //console.log("graph", obstacles);
       }
-    });
+    }); */
 
 
     obstacles.getChildren().forEach(obstacle => {
