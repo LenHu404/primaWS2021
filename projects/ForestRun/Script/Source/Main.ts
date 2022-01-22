@@ -153,6 +153,7 @@ namespace Script {
       } else {
         reset();
         if (GameState.get().hit() == 0) {
+          document.getElementById("info").innerHTML = "Game over! <br> Try again and press Enter to start the Game.";
           GameState.get().gameRunning = false;
           console.log("Score: " + GameState.get().score)
           //dataFile.save();
