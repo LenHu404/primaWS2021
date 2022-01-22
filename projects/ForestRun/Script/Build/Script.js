@@ -390,44 +390,15 @@ var Script;
     async function start(_event) {
         await ƒ.Project.loadResourcesFromHTML();
         graph = ƒ.Project.resources["Graph|2022-01-06T13:14:39.351Z|61391"];
-        let cmpCamera = new ƒ.ComponentCamera();
-        //cmpCamera.mtxPivot.rotateY(25);
-        //cmpCamera.mtxPivot.translateZ(-17);
-        //cmpCamera.mtxPivot.translateY(5);
-        //cmpCamera.mtxPivot.translateX(2);
-        cmpCamera.mtxPivot.translateY(8);
-        cmpCamera.mtxPivot.translateZ(-17);
-        cmpCamera.mtxPivot.rotateX(13);
-        cmpCamera.mtxPivot.rotateX(10);
-        graph.addComponent(cmpCamera);
-        let canvas = document.querySelector("canvas");
-        viewport = new ƒ.Viewport();
-        viewport.initialize("Viewport", graph, cmpCamera, canvas);
-        floor1 = graph.getChildrenByName("Laufband")[0].getChildrenByName("Boden")[0];
-        floor2 = graph.getChildrenByName("Laufband")[0].getChildrenByName("Boden")[1];
-        sub1 = graph.getChildrenByName("SkyBox")[0].getChildrenByName("WestSub")[0];
-        sub2 = graph.getChildrenByName("SkyBox")[0].getChildrenByName("OstSub")[0];
-        matFloor1 = floor1.getComponent(ƒ.ComponentMaterial);
-        matFloor2 = floor2.getComponent(ƒ.ComponentMaterial);
-        matSub1 = sub1.getComponent(ƒ.ComponentMaterial);
-        matSub2 = sub2.getComponent(ƒ.ComponentMaterial);
-        band = graph.getChildrenByName("Laufband")[0].getChildrenByName("Band")[0];
-        runner = graph.getChildrenByName("runner")[0];
-        //console.log("name ", this.node);
-        body = runner.getChildrenByName("body")[0];
-        //console.log("name ", this.body);
-        //head = body.getChildrenByName("head")[0];
-        lLeg = body.getChildrenByName("lLeg")[0];
-        rLeg = body.getChildrenByName("rLeg")[0];
-        lArm = body.getChildrenByName("lArm")[0];
-        rArm = body.getChildrenByName("rArm")[0];
-        obstacles = graph.getChildrenByName("Laufband")[0].getChildrenByName("Band")[0].getChildrenByName("Hindernisse")[0];
+        initiateCamera();
+        getNodesFromGraph();
+        // Add collisionhandling to runner-Node 
         runner.getComponent(ƒ.ComponentRigidbody).addEventListener("TriggerEnteredCollision" /* TRIGGER_ENTER */, hndCollision, true);
+        // Get Data from File or localStorage
         //dataFile = new Datafile();
         //dataFile.getData();
         if (localStorage.getItem("HScore")) {
             Script.GameState.get().hScore = JSON.parse(localStorage.getItem("HScore"));
-            console.log("lol", Script.GameState.get().hScore);
         }
         moving = MoveState.forward;
         //instaniateObstacles();
@@ -470,55 +441,6 @@ var Script;
         // matFloor.mtxPivot.rotation +=1
         viewport.draw();
         ƒ.AudioManager.default.update();
-    }
-    async function instaniateObstacles() {
-        let treeBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:44.114Z|12001"];
-        let startPos = new ƒ.Vector3(0, 0, metercount + 4);
-        let treeInstance = await ƒ.Project.createGraphInstance(treeBlueprint);
-        treeInstance.mtxLocal.translation = startPos;
-        obstacles.addChild(treeInstance);
-        let StoneBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:46.329Z|17331"];
-        startPos = new ƒ.Vector3(3, 0, metercount + 6);
-        let stoneInstance = await ƒ.Project.createGraphInstance(StoneBlueprint);
-        stoneInstance.mtxLocal.translation = startPos;
-        obstacles.addChild(stoneInstance);
-        let treeStumpBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:41.283Z|27993"];
-        startPos = new ƒ.Vector3(-2, 0, metercount + 15);
-        let treeStumpInstance = await ƒ.Project.createGraphInstance(treeStumpBlueprint);
-        treeStumpInstance.mtxLocal.translation = startPos;
-        obstacles.addChild(treeStumpInstance);
-    }
-    async function instaniateTree() {
-        let treeBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:44.114Z|12001"];
-        let startPos = new ƒ.Vector3(Math.random() * 6 - 3, 0, metercount + startPoint);
-        let treeInstance = await ƒ.Project.createGraphInstance(treeBlueprint);
-        treeInstance.mtxLocal.translation = startPos;
-        treeInstance.mtxLocal.rotateY(Math.random() * 360);
-        obstacles.addChild(treeInstance);
-    }
-    async function instaniateStone() {
-        let StoneBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:46.329Z|17331"];
-        let startPos = new ƒ.Vector3(Math.random() * 6 - 3, 0, metercount + startPoint);
-        let stoneInstance = await ƒ.Project.createGraphInstance(StoneBlueprint);
-        stoneInstance.mtxLocal.translation = startPos;
-        stoneInstance.mtxLocal.rotateY(Math.random() * 360);
-        obstacles.addChild(stoneInstance);
-    }
-    async function instaniateStump() {
-        let treeStumpBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:41.283Z|27993"];
-        let startPos = new ƒ.Vector3(Math.random() * 4 - 2, 0, metercount + startPoint);
-        let treeStumpInstance = await ƒ.Project.createGraphInstance(treeStumpBlueprint);
-        treeStumpInstance.mtxLocal.translation = startPos;
-        treeStumpInstance.mtxLocal.rotateY(Math.random() * 360);
-        obstacles.addChild(treeStumpInstance);
-    }
-    async function instaniateCoin() {
-        let CoinBlueprint = FudgeCore.Project.resources["Graph|2022-01-18T14:20:00.545Z|93108"];
-        let startPos = new ƒ.Vector3(Math.random() * 4 - 3, 0, metercount + startPoint);
-        let CoinInstance = await ƒ.Project.createGraphInstance(CoinBlueprint);
-        CoinInstance.mtxLocal.translation = startPos;
-        CoinInstance.mtxLocal.rotateY(Math.random() * 360);
-        obstacles.addChild(CoinInstance);
     }
     function startGame() {
         if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ENTER])) {
@@ -571,20 +493,17 @@ var Script;
         }
     }
     function deleteUnseenObstacle() {
-        /* obstacles.getChildren().forEach(obstacle => {
-          //console.log(obstacle.name, obstacle.mtxWorld.translation.z);
-          if (obstacle.mtxWorld.translation.z < -4) {
-            for (const node of obstacle.getIterator()) {
-              if (node.getComponent(ƒ.ComponentMaterial)) {
-                node.getComponent(ƒ.ComponentMaterial).sortForAlpha = true;
-                node.getComponent(ƒ.ComponentMaterial).material;
-              }
-              node.activate(false);
+        obstacles.getChildren().forEach(obstacle => {
+            //console.log(obstacle.name, obstacle.mtxWorld.translation.z);
+            if (obstacle.name == "Tree" && obstacle.mtxWorld.translation.z < runner.mtxLocal.translation.z) {
+                for (const node of obstacle.getIterator()) {
+                    if (node.getComponent(ƒ.ComponentMaterial)) {
+                        node.getComponent(ƒ.ComponentMaterial).sortForAlpha = true;
+                        node.getComponent(ƒ.ComponentMaterial).clrPrimary.a = 0.2;
+                    }
+                }
             }
-            obstacles.removeChild(obstacle);
-            //console.log("graph", obstacles);
-          }
-        }); */
+        });
         obstacles.getChildren().forEach(obstacle => {
             //console.log(obstacle.name, obstacle.mtxWorld.translation.z);
             if (obstacle.mtxWorld.translation.z < -10) {
@@ -642,6 +561,91 @@ var Script;
                 }
             }
         }
+    }
+    function initiateCamera() {
+        let cmpCamera = new ƒ.ComponentCamera();
+        //cmpCamera.mtxPivot.rotateY(25);
+        //cmpCamera.mtxPivot.translateZ(-17);
+        //cmpCamera.mtxPivot.translateY(5);
+        //cmpCamera.mtxPivot.translateX(2);
+        cmpCamera.mtxPivot.translateY(8);
+        cmpCamera.mtxPivot.translateZ(-17);
+        cmpCamera.mtxPivot.rotateX(13);
+        cmpCamera.mtxPivot.rotateX(10);
+        graph.addComponent(cmpCamera);
+        let canvas = document.querySelector("canvas");
+        viewport = new ƒ.Viewport();
+        viewport.initialize("Viewport", graph, cmpCamera, canvas);
+    }
+    function getNodesFromGraph() {
+        floor1 = graph.getChildrenByName("Laufband")[0].getChildrenByName("Boden")[0];
+        floor2 = graph.getChildrenByName("Laufband")[0].getChildrenByName("Boden")[1];
+        sub1 = graph.getChildrenByName("SkyBox")[0].getChildrenByName("WestSub")[0];
+        sub2 = graph.getChildrenByName("SkyBox")[0].getChildrenByName("OstSub")[0];
+        matFloor1 = floor1.getComponent(ƒ.ComponentMaterial);
+        matFloor2 = floor2.getComponent(ƒ.ComponentMaterial);
+        matSub1 = sub1.getComponent(ƒ.ComponentMaterial);
+        matSub2 = sub2.getComponent(ƒ.ComponentMaterial);
+        band = graph.getChildrenByName("Laufband")[0].getChildrenByName("Band")[0];
+        runner = graph.getChildrenByName("runner")[0];
+        //console.log("name ", this.node);
+        body = runner.getChildrenByName("body")[0];
+        //console.log("name ", this.body);
+        //head = body.getChildrenByName("head")[0];
+        lLeg = body.getChildrenByName("lLeg")[0];
+        rLeg = body.getChildrenByName("rLeg")[0];
+        lArm = body.getChildrenByName("lArm")[0];
+        rArm = body.getChildrenByName("rArm")[0];
+        obstacles = graph.getChildrenByName("Laufband")[0].getChildrenByName("Band")[0].getChildrenByName("Hindernisse")[0];
+    }
+    async function instaniateObstacles() {
+        let treeBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:44.114Z|12001"];
+        let startPos = new ƒ.Vector3(0, 0, metercount + 4);
+        let treeInstance = await ƒ.Project.createGraphInstance(treeBlueprint);
+        treeInstance.mtxLocal.translation = startPos;
+        obstacles.addChild(treeInstance);
+        let StoneBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:46.329Z|17331"];
+        startPos = new ƒ.Vector3(3, 0, metercount + 6);
+        let stoneInstance = await ƒ.Project.createGraphInstance(StoneBlueprint);
+        stoneInstance.mtxLocal.translation = startPos;
+        obstacles.addChild(stoneInstance);
+        let treeStumpBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:41.283Z|27993"];
+        startPos = new ƒ.Vector3(-2, 0, metercount + 15);
+        let treeStumpInstance = await ƒ.Project.createGraphInstance(treeStumpBlueprint);
+        treeStumpInstance.mtxLocal.translation = startPos;
+        obstacles.addChild(treeStumpInstance);
+    }
+    async function instaniateTree() {
+        let treeBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:44.114Z|12001"];
+        let startPos = new ƒ.Vector3(Math.random() * 6 - 3, 0, metercount + startPoint);
+        let treeInstance = await ƒ.Project.createGraphInstance(treeBlueprint);
+        treeInstance.mtxLocal.translation = startPos;
+        treeInstance.mtxLocal.rotateY(Math.random() * 360);
+        obstacles.addChild(treeInstance);
+    }
+    async function instaniateStone() {
+        let StoneBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:46.329Z|17331"];
+        let startPos = new ƒ.Vector3(Math.random() * 6 - 3, 0, metercount + startPoint);
+        let stoneInstance = await ƒ.Project.createGraphInstance(StoneBlueprint);
+        stoneInstance.mtxLocal.translation = startPos;
+        stoneInstance.mtxLocal.rotateY(Math.random() * 360);
+        obstacles.addChild(stoneInstance);
+    }
+    async function instaniateStump() {
+        let treeStumpBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:41.283Z|27993"];
+        let startPos = new ƒ.Vector3(Math.random() * 4 - 2, 0, metercount + startPoint);
+        let treeStumpInstance = await ƒ.Project.createGraphInstance(treeStumpBlueprint);
+        treeStumpInstance.mtxLocal.translation = startPos;
+        treeStumpInstance.mtxLocal.rotateY(Math.random() * 360);
+        obstacles.addChild(treeStumpInstance);
+    }
+    async function instaniateCoin() {
+        let CoinBlueprint = FudgeCore.Project.resources["Graph|2022-01-18T14:20:00.545Z|93108"];
+        let startPos = new ƒ.Vector3(Math.random() * 4 - 3, 0, metercount + startPoint);
+        let CoinInstance = await ƒ.Project.createGraphInstance(CoinBlueprint);
+        CoinInstance.mtxLocal.translation = startPos;
+        CoinInstance.mtxLocal.rotateY(Math.random() * 360);
+        obstacles.addChild(CoinInstance);
     }
     function sin(x) {
         return Math.sin(7 * x);

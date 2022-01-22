@@ -47,53 +47,17 @@ namespace Script {
     await ƒ.Project.loadResourcesFromHTML();
     graph = <ƒ.Graph>ƒ.Project.resources["Graph|2022-01-06T13:14:39.351Z|61391"];
 
-    let cmpCamera = new ƒ.ComponentCamera();
-    //cmpCamera.mtxPivot.rotateY(25);
-    //cmpCamera.mtxPivot.translateZ(-17);
-    //cmpCamera.mtxPivot.translateY(5);
-    //cmpCamera.mtxPivot.translateX(2);
-
-    cmpCamera.mtxPivot.translateY(8);
-    cmpCamera.mtxPivot.translateZ(-17);
-    cmpCamera.mtxPivot.rotateX(13);
-
-    cmpCamera.mtxPivot.rotateX(10);
-    graph.addComponent(cmpCamera);
-
-    let canvas: HTMLCanvasElement = document.querySelector("canvas");
-    viewport = new ƒ.Viewport();
-    viewport.initialize("Viewport", graph, cmpCamera, canvas);
-
-
-    floor1 = graph.getChildrenByName("Laufband")[0].getChildrenByName("Boden")[0];
-    floor2 = graph.getChildrenByName("Laufband")[0].getChildrenByName("Boden")[1];
-    sub1 = graph.getChildrenByName("SkyBox")[0].getChildrenByName("WestSub")[0];
-    sub2 = graph.getChildrenByName("SkyBox")[0].getChildrenByName("OstSub")[0];
-    matFloor1 = floor1.getComponent(ƒ.ComponentMaterial);
-    matFloor2 = floor2.getComponent(ƒ.ComponentMaterial);
-    matSub1 = sub1.getComponent(ƒ.ComponentMaterial);
-    matSub2 = sub2.getComponent(ƒ.ComponentMaterial);
-    band = graph.getChildrenByName("Laufband")[0].getChildrenByName("Band")[0];
-    runner = graph.getChildrenByName("runner")[0];
-
-    //console.log("name ", this.node);
-    body = runner.getChildrenByName("body")[0];
-    //console.log("name ", this.body);
-
-    //head = body.getChildrenByName("head")[0];
-    lLeg = body.getChildrenByName("lLeg")[0];
-    rLeg = body.getChildrenByName("rLeg")[0];
-    lArm = body.getChildrenByName("lArm")[0];
-    rArm = body.getChildrenByName("rArm")[0];
-
-    obstacles = graph.getChildrenByName("Laufband")[0].getChildrenByName("Band")[0].getChildrenByName("Hindernisse")[0];
-
+    initiateCamera();
+    getNodesFromGraph();
+    
+// Add collisionhandling to runner-Node 
     runner.getComponent(ƒ.ComponentRigidbody).addEventListener(ƒ.EVENT_PHYSICS.TRIGGER_ENTER, hndCollision, true)
+
+// Get Data from File or localStorage
     //dataFile = new Datafile();
     //dataFile.getData();
     if (localStorage.getItem("HScore")) {
       GameState.get().hScore = JSON.parse(localStorage.getItem("HScore"));
-      console.log("lol", GameState.get().hScore);
     }
 
     moving = MoveState.forward;
@@ -143,6 +107,188 @@ namespace Script {
     // matFloor.mtxPivot.rotation +=1
     viewport.draw();
     ƒ.AudioManager.default.update();
+  }
+ 
+
+  function startGame(): void {
+    if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ENTER])) {
+      GameState.get().gameRunning = true;
+      GameState.get().score = 0;
+      GameState.get().health1 = true;
+      GameState.get().health2 = true;
+      GameState.get().health3 = true;
+      GameState.get().setHealth();
+      obstacleDistance = 5;
+      band.mtxLocal.translation = new ƒ.Vector3(0, 0, 0);
+      metercount = 0;
+      lastObstacleSpawnDistance = 0;
+      lastObstacleSpawn = 0;
+      speed = 4;
+    }
+
+
+  }
+
+  function hndCollision(_event: ƒ.EventPhysics) {
+    //console.log("called");
+    if (GameState.get().gameRunning) {
+      let obstacle: ƒ.Node = _event.cmpRigidbody.node;
+      console.log(obstacle.name);
+
+      if (obstacle.getParent().name != "Hindernisse") {
+        obstacle = obstacle.getParent();
+      }
+      for (const node of obstacle.getIterator()) {
+        if (node.getComponent(ƒ.ComponentRigidbody)) {
+          node.removeComponent(node.getComponent(ƒ.ComponentRigidbody));
+        }
+        node.activate(false);
+      }
+      obstacles.removeChild(obstacle);
+
+
+      if (obstacle.name == "Coin") {
+        console
+        GameState.get().score += 10000;
+      } else {
+        reset();
+        if (GameState.get().hit() == 0) {
+          GameState.get().gameRunning = false;
+          console.log("Score: " + GameState.get().score)
+          //dataFile.save();
+          if (GameState.get().score > GameState.get().hScore) {
+            GameState.get().hScore = GameState.get().score;
+            localStorage.setItem("HScore", JSON.stringify(GameState.get().score));
+
+          }
+        }
+      }
+
+      //console.log( GameState.get().health);
+    }
+
+  }
+
+  function deleteUnseenObstacle(): void {
+
+    obstacles.getChildren().forEach(obstacle => {
+      //console.log(obstacle.name, obstacle.mtxWorld.translation.z);
+      if (obstacle.name == "Tree" && obstacle.mtxWorld.translation.z < runner.mtxLocal.translation.z) {
+        for (const node of obstacle.getIterator()) {
+          if (node.getComponent(ƒ.ComponentMaterial)) {
+            node.getComponent(ƒ.ComponentMaterial).sortForAlpha = true;
+            node.getComponent(ƒ.ComponentMaterial).clrPrimary.a = 0.2;
+          }
+        }
+      }
+    });
+
+
+    obstacles.getChildren().forEach(obstacle => {
+      //console.log(obstacle.name, obstacle.mtxWorld.translation.z);
+      if (obstacle.mtxWorld.translation.z < -10) {
+        for (const node of obstacle.getIterator()) {
+          if (node.getComponent(ƒ.ComponentRigidbody)) {
+            node.removeComponent(node.getComponent(ƒ.ComponentRigidbody));
+          }
+          node.activate(false);
+        }
+        obstacles.removeChild(obstacle);
+        //console.log("graph", obstacles);
+      }
+    });
+  }
+
+  function reset(): void {
+
+    obstacles.getChildren().forEach(obstacle => {
+      //console.log(obstacle.name, obstacle.mtxWorld.translation.z);
+      if (obstacle.mtxWorld.translation.z > -5 && obstacle.mtxWorld.translation.z < 15) {
+        for (const node of obstacle.getIterator()) {
+          if (node.getComponent(ƒ.ComponentRigidbody)) {
+            node.removeComponent(node.getComponent(ƒ.ComponentRigidbody));
+          }
+          node.activate(false);
+        }
+        obstacles.removeChild(obstacle);
+
+        //console.log("graph", obstacles);
+      }
+    });
+    runner.mtxLocal.translation = new ƒ.Vector3(0, 0.75, -3);
+
+
+  }
+
+  function spawingObstacles(): void {
+    if (lastObstacleSpawnDistance >= obstacleDistance) {
+      let randomObstacle: number = Math.random();
+      if (randomObstacle < 0.3) {
+        instaniateTree();
+      } else if (randomObstacle > 0.8) {
+        instaniateStump();
+      } else {
+        instaniateStone();
+      }
+      //instaniateObstacles()
+      lastObstacleSpawnDistance = 0
+      lastObstacleSpawn = metercount;
+      if (obstacleDistance > 2.5)
+        obstacleDistance -= 0.01;
+    }
+    else lastObstacleSpawnDistance = metercount - lastObstacleSpawn
+
+    if (Math.random() > 0.9) {
+      if (Math.random() > 0.9) {
+        if (Math.random() > 0.9) {
+          instaniateCoin();
+        }
+      }
+    }
+  }
+
+  function initiateCamera(): void {
+    let cmpCamera = new ƒ.ComponentCamera();
+    //cmpCamera.mtxPivot.rotateY(25);
+    //cmpCamera.mtxPivot.translateZ(-17);
+    //cmpCamera.mtxPivot.translateY(5);
+    //cmpCamera.mtxPivot.translateX(2);
+
+    cmpCamera.mtxPivot.translateY(8);
+    cmpCamera.mtxPivot.translateZ(-17);
+    cmpCamera.mtxPivot.rotateX(13);
+
+    cmpCamera.mtxPivot.rotateX(10);
+    graph.addComponent(cmpCamera);
+
+    let canvas: HTMLCanvasElement = document.querySelector("canvas");
+    viewport = new ƒ.Viewport();
+    viewport.initialize("Viewport", graph, cmpCamera, canvas);
+  }
+
+  function getNodesFromGraph(): void {
+    floor1 = graph.getChildrenByName("Laufband")[0].getChildrenByName("Boden")[0];
+    floor2 = graph.getChildrenByName("Laufband")[0].getChildrenByName("Boden")[1];
+    sub1 = graph.getChildrenByName("SkyBox")[0].getChildrenByName("WestSub")[0];
+    sub2 = graph.getChildrenByName("SkyBox")[0].getChildrenByName("OstSub")[0];
+    matFloor1 = floor1.getComponent(ƒ.ComponentMaterial);
+    matFloor2 = floor2.getComponent(ƒ.ComponentMaterial);
+    matSub1 = sub1.getComponent(ƒ.ComponentMaterial);
+    matSub2 = sub2.getComponent(ƒ.ComponentMaterial);
+    band = graph.getChildrenByName("Laufband")[0].getChildrenByName("Band")[0];
+    runner = graph.getChildrenByName("runner")[0];
+
+    //console.log("name ", this.node);
+    body = runner.getChildrenByName("body")[0];
+    //console.log("name ", this.body);
+
+    //head = body.getChildrenByName("head")[0];
+    lLeg = body.getChildrenByName("lLeg")[0];
+    rLeg = body.getChildrenByName("rLeg")[0];
+    lArm = body.getChildrenByName("lArm")[0];
+    rArm = body.getChildrenByName("rArm")[0];
+
+    obstacles = graph.getChildrenByName("Laufband")[0].getChildrenByName("Band")[0].getChildrenByName("Hindernisse")[0];
   }
 
   async function instaniateObstacles(): Promise<void> {
@@ -234,146 +380,6 @@ namespace Script {
     CoinInstance.mtxLocal.rotateY(Math.random() * 360);
     obstacles.addChild(CoinInstance);
 
-  }
-
-  function startGame(): void {
-    if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ENTER])) {
-      GameState.get().gameRunning = true;
-      GameState.get().score = 0;
-      GameState.get().health1 = true;
-      GameState.get().health2 = true;
-      GameState.get().health3 = true;
-      GameState.get().setHealth();
-      obstacleDistance = 5;
-      band.mtxLocal.translation = new ƒ.Vector3(0, 0, 0);
-      metercount = 0;
-      lastObstacleSpawnDistance = 0;
-      lastObstacleSpawn = 0;
-      speed = 4;
-    }
-
-
-  }
-
-  function hndCollision(_event: ƒ.EventPhysics) {
-    //console.log("called");
-    if (GameState.get().gameRunning) {
-      let obstacle: ƒ.Node = _event.cmpRigidbody.node;
-      console.log(obstacle.name);
-
-      if (obstacle.getParent().name != "Hindernisse") {
-        obstacle = obstacle.getParent();
-      }
-      for (const node of obstacle.getIterator()) {
-        if (node.getComponent(ƒ.ComponentRigidbody)) {
-          node.removeComponent(node.getComponent(ƒ.ComponentRigidbody));
-        }
-        node.activate(false);
-      }
-      obstacles.removeChild(obstacle);
-
-
-      if (obstacle.name == "Coin") {
-        console
-        GameState.get().score += 10000;
-      } else {
-        reset();
-        if (GameState.get().hit() == 0) {
-          GameState.get().gameRunning = false;
-          console.log("Score: " + GameState.get().score)
-          //dataFile.save();
-          if (GameState.get().score > GameState.get().hScore) {
-            GameState.get().hScore = GameState.get().score;
-            localStorage.setItem("HScore", JSON.stringify(GameState.get().score));
-
-          }
-        }
-      }
-
-      //console.log( GameState.get().health);
-    }
-
-  }
-
-  function deleteUnseenObstacle(): void {
-
-    /* obstacles.getChildren().forEach(obstacle => {
-      //console.log(obstacle.name, obstacle.mtxWorld.translation.z);
-      if (obstacle.mtxWorld.translation.z < -4) {
-        for (const node of obstacle.getIterator()) {
-          if (node.getComponent(ƒ.ComponentMaterial)) {
-            node.getComponent(ƒ.ComponentMaterial).sortForAlpha = true;
-            node.getComponent(ƒ.ComponentMaterial).material;
-          }
-          node.activate(false);
-        }
-        obstacles.removeChild(obstacle);
-        //console.log("graph", obstacles);
-      }
-    }); */
-
-
-    obstacles.getChildren().forEach(obstacle => {
-      //console.log(obstacle.name, obstacle.mtxWorld.translation.z);
-      if (obstacle.mtxWorld.translation.z < -10) {
-        for (const node of obstacle.getIterator()) {
-          if (node.getComponent(ƒ.ComponentRigidbody)) {
-            node.removeComponent(node.getComponent(ƒ.ComponentRigidbody));
-          }
-          node.activate(false);
-        }
-        obstacles.removeChild(obstacle);
-        //console.log("graph", obstacles);
-      }
-    });
-  }
-
-  function reset(): void {
-
-    obstacles.getChildren().forEach(obstacle => {
-      //console.log(obstacle.name, obstacle.mtxWorld.translation.z);
-      if (obstacle.mtxWorld.translation.z > -5 && obstacle.mtxWorld.translation.z < 15) {
-        for (const node of obstacle.getIterator()) {
-          if (node.getComponent(ƒ.ComponentRigidbody)) {
-            node.removeComponent(node.getComponent(ƒ.ComponentRigidbody));
-          }
-          node.activate(false);
-        }
-        obstacles.removeChild(obstacle);
-
-        //console.log("graph", obstacles);
-      }
-    });
-    runner.mtxLocal.translation = new ƒ.Vector3(0, 0.75, -3);
-
-
-  }
-
-  function spawingObstacles(): void {
-    if (lastObstacleSpawnDistance >= obstacleDistance) {
-      let randomObstacle: number = Math.random();
-      if (randomObstacle < 0.3) {
-        instaniateTree();
-      } else if (randomObstacle > 0.8) {
-        instaniateStump();
-      } else {
-        instaniateStone();
-      }
-      //instaniateObstacles()
-      lastObstacleSpawnDistance = 0
-      lastObstacleSpawn = metercount;
-      if (obstacleDistance > 2.5)
-        obstacleDistance -= 0.01;
-    }
-    else lastObstacleSpawnDistance = metercount - lastObstacleSpawn
-
-    if (Math.random() > 0.9) {
-      if (Math.random() > 0.9) {
-        if (Math.random() > 0.9) {
-          instaniateCoin();
-        }
-      }
-    }
   }
 
   function sin(x: number): number {
