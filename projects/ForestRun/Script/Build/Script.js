@@ -358,7 +358,7 @@ var Script;
         MoveState[MoveState["idle"] = 2] = "idle";
     })(MoveState || (MoveState = {}));
     let viewport;
-    document.addEventListener("interactiveViewportStarted", start);
+    //document.addEventListener("interactiveViewportStarted", <EventListener>start);
     window.addEventListener("load", start);
     let graph;
     let runner;
@@ -386,6 +386,8 @@ var Script;
     let rArm;
     let moving;
     let timeStamp = 0;
+    let bgMusic;
+    let bgMusicPlayig;
     //let dataFile : Datafile;
     async function start(_event) {
         await ƒ.Project.loadResourcesFromHTML();
@@ -402,12 +404,13 @@ var Script;
         }
         moving = MoveState.forward;
         //instaniateObstacles();
-        //viewport.physicsDebugMode = ƒ.PHYSICS_DEBUGMODE.COLLIDERS;
+        viewport.physicsDebugMode = ƒ.PHYSICS_DEBUGMODE.COLLIDERS;
         ƒ.Physics.adjustTransforms(graph);
         ƒ.AudioManager.default.listenTo(graph);
         ƒ.AudioManager.default.listenWith(graph.getComponent(ƒ.ComponentAudioListener));
         ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, update);
         ƒ.Loop.start(ƒ.LOOP_MODE.TIME_REAL, 60); // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
+        bgMusic = getcmpAudio("sndBgMusic");
     }
     function update(_event) {
         let deltaTime = ƒ.Loop.timeFrameReal / 1000;
@@ -436,6 +439,10 @@ var Script;
         if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.E])) {
             instaniateObstacles();
         }
+        if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.M])) {
+            bgMusicPlayig = !bgMusicPlayig;
+        }
+        bgMusic.play(bgMusicPlayig);
         //console.log("metercount", metercount);
         //matFloor.mtxPivot.translation.x += 0.01* deltaTime;
         // matFloor.mtxPivot.rotation +=1
@@ -476,8 +483,12 @@ var Script;
             if (obstacle.name == "Coin") {
                 console;
                 Script.GameState.get().score += 10000;
+                let cmpAudio = getcmpAudio("sndGoldcoin");
+                cmpAudio.play(true);
             }
             else {
+                let cmpAudio = getcmpAudio("sndHit");
+                cmpAudio.play(true);
                 reset();
                 if (Script.GameState.get().hit() == 0) {
                     document.getElementById("info").innerHTML = "Game over! <br> Try again and press Enter to start the Game.";
@@ -538,7 +549,7 @@ var Script;
     function spawingObstacles() {
         if (lastObstacleSpawnDistance >= obstacleDistance) {
             let randomObstacle = Math.random();
-            if (randomObstacle < 0.3) {
+            if (randomObstacle < 0.15) {
                 instaniateTree();
             }
             else if (randomObstacle > 0.8) {
@@ -665,6 +676,28 @@ var Script;
     }
     function map_range(v, from_min, from_max, to_min, to_max) {
         return to_min + (v - from_min) * (to_max - to_min) / (from_max - from_min);
+    }
+    function getcmpAudio(name) {
+        switch (name) {
+            case "sndGoldcoin":
+                return graph.getComponents(ƒ.ComponentAudio)[2];
+                break;
+            case "sndHit":
+                return graph.getComponents(ƒ.ComponentAudio)[1];
+                break;
+            case "sndBgMusic":
+                return graph.getComponents(ƒ.ComponentAudio)[0];
+                break;
+            default:
+                break;
+        }
+        /* let cmpAudios: ƒ.ComponentAudio[] = graph.getComponents(ƒ.ComponentAudio);
+        for (let index = 0; index < cmpAudios.length; index++) {
+          if (cmpAudios[index].getAudio().name == name) {
+            return graph.getComponents(ƒ.ComponentAudio)[index];
+          }
+        } */
+        return graph.getComponents(ƒ.ComponentAudio)[1];
     }
 })(Script || (Script = {}));
 //# sourceMappingURL=Script.js.map

@@ -9,7 +9,7 @@ namespace Script {
   }
 
   let viewport: ƒ.Viewport;
-  document.addEventListener("interactiveViewportStarted", <EventListener>start);
+  //document.addEventListener("interactiveViewportStarted", <EventListener>start);
 
   window.addEventListener("load", start);
 
@@ -39,21 +39,25 @@ namespace Script {
   let rArm: ƒ.Node;
   let moving: MoveState;
   let timeStamp: number = 0;
+  let bgMusic: ƒ.ComponentAudio;
+  let bgMusicPlayig: boolean;
   //let dataFile : Datafile;
 
 
   async function start(_event: Event): Promise<void> {
+
+
 
     await ƒ.Project.loadResourcesFromHTML();
     graph = <ƒ.Graph>ƒ.Project.resources["Graph|2022-01-06T13:14:39.351Z|61391"];
 
     initiateCamera();
     getNodesFromGraph();
-    
-// Add collisionhandling to runner-Node 
+
+    // Add collisionhandling to runner-Node 
     runner.getComponent(ƒ.ComponentRigidbody).addEventListener(ƒ.EVENT_PHYSICS.TRIGGER_ENTER, hndCollision, true)
 
-// Get Data from File or localStorage
+    // Get Data from File or localStorage
     //dataFile = new Datafile();
     //dataFile.getData();
     if (localStorage.getItem("HScore")) {
@@ -62,18 +66,19 @@ namespace Script {
 
     moving = MoveState.forward;
     //instaniateObstacles();
-    //viewport.physicsDebugMode = ƒ.PHYSICS_DEBUGMODE.COLLIDERS;
+    viewport.physicsDebugMode = ƒ.PHYSICS_DEBUGMODE.COLLIDERS;
     ƒ.Physics.adjustTransforms(graph);
     ƒ.AudioManager.default.listenTo(graph);
     ƒ.AudioManager.default.listenWith(graph.getComponent(ƒ.ComponentAudioListener));
     ƒ.Loop.addEventListener(ƒ.EVENT.LOOP_FRAME, update);
     ƒ.Loop.start(ƒ.LOOP_MODE.TIME_REAL, 60);  // start the game loop to continously draw the viewport, update the audiosystem and drive the physics i/a
+    bgMusic = getcmpAudio("sndBgMusic");
   }
 
   function update(_event: Event): void {
-    
+
     let deltaTime: number = ƒ.Loop.timeFrameReal / 1000;
-    
+
     ƒ.Physics.world.simulate(Math.min(0.1, deltaTime));  // if physics is included and used
     deleteUnseenObstacle();
     if (GameState.get().gameRunning) {
@@ -99,7 +104,11 @@ namespace Script {
     if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.E])) {
       instaniateObstacles();
     }
-    
+
+    if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.M])) {
+      bgMusicPlayig = !bgMusicPlayig;
+    }
+    bgMusic.play(bgMusicPlayig);
     //console.log("metercount", metercount);
 
     //matFloor.mtxPivot.translation.x += 0.01* deltaTime;
@@ -108,7 +117,7 @@ namespace Script {
     viewport.draw();
     ƒ.AudioManager.default.update();
   }
- 
+
 
   function startGame(): void {
     if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.ENTER])) {
@@ -150,7 +159,11 @@ namespace Script {
       if (obstacle.name == "Coin") {
         console
         GameState.get().score += 10000;
+        let cmpAudio: ƒ.ComponentAudio = getcmpAudio("sndGoldcoin");
+        cmpAudio.play(true);
       } else {
+        let cmpAudio: ƒ.ComponentAudio = getcmpAudio("sndHit");
+        cmpAudio.play(true);
         reset();
         if (GameState.get().hit() == 0) {
           document.getElementById("info").innerHTML = "Game over! <br> Try again and press Enter to start the Game.";
@@ -224,7 +237,7 @@ namespace Script {
   function spawingObstacles(): void {
     if (lastObstacleSpawnDistance >= obstacleDistance) {
       let randomObstacle: number = Math.random();
-      if (randomObstacle < 0.3) {
+      if (randomObstacle < 0.15) {
         instaniateTree();
       } else if (randomObstacle > 0.8) {
         instaniateStump();
@@ -403,5 +416,31 @@ namespace Script {
 
   function map_range(v: number, from_min: number, from_max: number, to_min: number, to_max: number): number {
     return to_min + (v - from_min) * (to_max - to_min) / (from_max - from_min);
-}
+  }
+
+
+  function getcmpAudio(name: string): ƒ.ComponentAudio {
+
+    switch (name) {
+      case "sndGoldcoin":
+        return graph.getComponents(ƒ.ComponentAudio)[2];
+        break;
+      case "sndHit":
+        return graph.getComponents(ƒ.ComponentAudio)[1];
+        break;
+      case "sndBgMusic":
+        return graph.getComponents(ƒ.ComponentAudio)[0];
+        break;
+
+      default:
+        break;
+    }
+    /* let cmpAudios: ƒ.ComponentAudio[] = graph.getComponents(ƒ.ComponentAudio);
+    for (let index = 0; index < cmpAudios.length; index++) {
+      if (cmpAudios[index].getAudio().name == name) {
+        return graph.getComponents(ƒ.ComponentAudio)[index];
+      }
+    } */
+    return graph.getComponents(ƒ.ComponentAudio)[1];
+  }
 }
