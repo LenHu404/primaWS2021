@@ -20,18 +20,18 @@ Repository for the module "Prototyping interactive media-applications and games"
   - A copy of the catalogue of criteria above, the right column replaced with very brief explanations and descriptions of the fullfullments of these criteria -->
 
 ### Checklist for the final assignment
-© Prof. Dipl.-Ing. Jirka R. Dell'Oro-Friedl, HFU                                                                                                     |
+|  |          |                                                                                                               |
 |---:|-------------------|---------------------------------------------------------------------------------------------------------------------|
 |    | Title             | Forest Run.                                                                                                         |
 |    | Author            | Lennard Hurst                                                                                                       |
 |    | Year and season   | Wintersemester 2021/22                                   |
 |    | Curriculum and semester | Medieninformatik Bachelor 5                                    |
 |    | Course            | "Prototyping Interactive Media-Applications and Games" at Furtwangen University                          |
-|    | Docent            | Jirka Dell'Oro-Friedl                                  |
+|    | Docent            | Jirka Dell'Oro-Friedl                                                                                               |
 |---:|-------------------|---------------------------------------------------------------------------------------------------------------------|
-| Nr | Criterion         | Explanation                                                                                                              |
+| Nr | Criterion         | Explanation                                                                                                         |
 |---:|-------------------|---------------------------------------------------------------------------------------------------------------------|
-|  0 | Units and Positions | Where is 0, what is 1? Explain your setup of coordinate systems of the entities.                                    |
+|  0 | Units and Positions | Where is 0, what is 1? Explain your setup of coordinate systems of the entities.                                  |
 |  1 | Hierarchy         | Explain the setup of the graphs and the advantages you gain by it.                                                  |
 |  2 | Editor            | Use the visual editor and explain which parts are better done by coding and why.                                    |
 |  3 | Scriptcomponents  | Use scriptcomponents and explain if they were useful in your context or not and why.                                |
