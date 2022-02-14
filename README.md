@@ -19,7 +19,7 @@ Repository for the module "Prototyping interactive media-applications and games"
   - Description on how to install, if applicable (additional services, database etc.) 
   - A copy of the catalogue of criteria above, the right column replaced with very brief explanations and descriptions of the fullfullments of these criteria -->
 
-### Checklist for the final assignment
+### Information
 |  |          |                                                                                                               |
 |---:|-------------------|---------------------------------------------------------------------------------------------------------------------|
 |    | Title             | Forest Run.                                                                                                         |
@@ -28,8 +28,9 @@ Repository for the module "Prototyping interactive media-applications and games"
 |    | Curriculum and semester | Medieninformatik Bachelor 5                                    |
 |    | Course            | "Prototyping Interactive Media-Applications and Games" at Furtwangen University                          |
 |    | Docent            | Jirka Dell'Oro-Friedl                                                                                               |
+|  |          |    
 
-|---:|-------------------|---------------------------------------------------------------------------------------------------------------------|
+### Checklist for the final assignment
 | Nr | Criterion         | Explanation                                                                                                         |
 |---:|-------------------|---------------------------------------------------------------------------------------------------------------------|
 |  0 | Units and Positions | Where is 0, what is 1? Explain your setup of coordinate systems of the entities.                                  |
