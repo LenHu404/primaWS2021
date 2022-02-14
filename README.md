@@ -28,6 +28,7 @@ Repository for the module "Prototyping interactive media-applications and games"
 |    | Curriculum and semester | Medieninformatik Bachelor 5                                    |
 |    | Course            | "Prototyping Interactive Media-Applications and Games" at Furtwangen University                          |
 |    | Docent            | Jirka Dell'Oro-Friedl                                                                                               |
+
 |---:|-------------------|---------------------------------------------------------------------------------------------------------------------|
 | Nr | Criterion         | Explanation                                                                                                         |
 |---:|-------------------|---------------------------------------------------------------------------------------------------------------------|
