@@ -826,7 +826,7 @@ var Script;
                             });
                             let trigger = this.node.getChildren()[0].getComponent(ƒ.ComponentRigidbody);
                             trigger.addEventListener("TriggerEnteredCollision" /* TRIGGER_ENTER */, (_event) => {
-                                console.log("TriggerEnter", _event.cmpRigidbody.node.name);
+                                //console.log("TriggerEnter", _event.cmpRigidbody.node.name);
                                 if (_event.cmpRigidbody.node.name == "runner" && this.stateCurrent != JOB.DIE)
                                     this.transit(JOB.ESCAPE);
                             });
@@ -879,7 +879,6 @@ var Script;
             }
             static async actEscape(_machine) {
                 _machine.cmpTransform.mtxLocal.translateZ(_machine.speedEscape * _machine.deltaTime);
-                StateMachine.actDefault(_machine);
             }
             static async actDie(_machine) {
                 _machine.transit(JOB.IDLE);

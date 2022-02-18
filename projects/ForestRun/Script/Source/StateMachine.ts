@@ -70,7 +70,6 @@ namespace Script {
 
     private static async actEscape(_machine: StateMachine): Promise<void> {
       _machine.cmpTransform.mtxLocal.translateZ(_machine.speedEscape * _machine.deltaTime);
-            StateMachine.actDefault(_machine);
     }
 
     private static async actDie(_machine: StateMachine): Promise<void> {
@@ -109,7 +108,7 @@ namespace Script {
           });
           let trigger: ƒ.ComponentRigidbody = this.node.getChildren()[0].getComponent(ƒ.ComponentRigidbody);
           trigger.addEventListener(ƒ.EVENT_PHYSICS.TRIGGER_ENTER, (_event: ƒ.EventPhysics) => {
-            console.log("TriggerEnter", _event.cmpRigidbody.node.name);
+            //console.log("TriggerEnter", _event.cmpRigidbody.node.name);
             if (_event.cmpRigidbody.node.name == "runner" && this.stateCurrent != JOB.DIE)
               this.transit(JOB.ESCAPE);
           });
