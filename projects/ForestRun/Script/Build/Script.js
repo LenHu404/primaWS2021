@@ -740,7 +740,9 @@ var Script;
         let data = await fetchData();
         let fetchedHighscore = data.data.startHighscore;
         startSpeed = data.data.startSpeed;
-        Script.GameState.get().hScore = fetchedHighscore;
+        Script.GameState.get().hScore = localStorage.getItem("HScore");
+        if (fetchedHighscore > Script.GameState.get().hScore)
+            Script.GameState.get().hScore = fetchedHighscore;
     }
     async function fetchData() {
         try {

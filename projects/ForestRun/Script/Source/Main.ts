@@ -13,7 +13,7 @@ namespace Script {
   //document.addEventListener("interactiveViewportStarted", <EventListener>start);
 
   window.addEventListener("load", start);
-  
+
   const clrWhite: ƒ.Color = ƒ.Color.CSS("white");
   let animations: ƒAid.SpriteSheetAnimations;
   let spriteNode: ƒAid.NodeSprite;
@@ -189,7 +189,7 @@ namespace Script {
         GameState.get().score += 10000;
         let cmpAudio: ƒ.ComponentAudio = getcmpAudio("sndGoldcoin");
         cmpAudio.play(true);
-      } else if (obstacle.name != "ghost"){
+      } else if (obstacle.name != "ghost") {
         let cmpAudio: ƒ.ComponentAudio = getcmpAudio("sndHit");
         cmpAudio.play(true);
         reset();
@@ -474,7 +474,10 @@ namespace Script {
 
     let fetchedHighscore: number = data.data.startHighscore;
     startSpeed = data.data.startSpeed;
-    GameState.get().hScore = fetchedHighscore;
+
+    GameState.get().hScore = <number><unknown>localStorage.getItem("HScore")
+    if (fetchedHighscore > GameState.get().hScore)
+      GameState.get().hScore = fetchedHighscore;
   }
 
   async function fetchData() {
@@ -513,7 +516,7 @@ namespace Script {
     generateSprites(spriteSheet);
   }
 
-  
+
   function generateSprites(_spritesheet: ƒ.CoatTextured): void {
     animations = {};
     //this.animations = {};
