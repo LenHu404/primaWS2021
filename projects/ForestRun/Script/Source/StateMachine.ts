@@ -144,11 +144,5 @@ namespace Script {
       return Math.sin(1 * x) * 2;
     }
 
-
-
-    // protected reduceMutator(_mutator: ƒ.Mutator): void {
-    //   // delete properties that should not be mutated
-    //   // undefined properties and private fields (#) will not be included by default
-    // }
   }
 }

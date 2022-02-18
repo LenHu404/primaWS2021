@@ -404,7 +404,7 @@ var Script;
     let moving;
     let timeStamp = 0;
     let bgMusic;
-    let bgMusicPlayig = false;
+    let bgMusicPlayig = true;
     //let dataFile : Datafile;
     async function start(_event) {
         await ƒ.Project.loadResourcesFromHTML();
@@ -428,12 +428,12 @@ var Script;
         spriteNode.setFrameDirection(1);
         spriteNode.mtxLocal.translateY(-0.5);
         spriteNode.mtxLocal.rotateY(180);
-        spriteNode.mtxLocal.translateZ(1);
+        spriteNode.mtxLocal.translateZ(0.6);
         spriteNode.framerate = 8;
         ghost.addChild(spriteNode);
         moving = MoveState.forward;
         //instaniateObstacles();
-        viewport.physicsDebugMode = ƒ.PHYSICS_DEBUGMODE.COLLIDERS;
+        //viewport.physicsDebugMode = ƒ.PHYSICS_DEBUGMODE.COLLIDERS;
         ƒ.Physics.adjustTransforms(graph);
         ƒ.AudioManager.default.listenTo(graph);
         ƒ.AudioManager.default.listenWith(graph.getComponent(ƒ.ComponentAudioListener));
@@ -508,8 +508,6 @@ var Script;
             if (obstacle.name == "ghost") {
                 console.log("buh!");
                 Script.GameState.get().score += 10000;
-                let cmpAudio = getcmpAudio("sndGoldcoin");
-                cmpAudio.play(true);
             }
             else if (obstacle.getParent().name != "Hindernisse") {
                 obstacle = obstacle.getParent();
