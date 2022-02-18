@@ -2,11 +2,11 @@
 Repository for the module "Prototyping interactive media-applications and games" at Furtwangen University
 
 ## Abgabe: Forest Run
-Play it on Github-Pages: <a href="https://lenhu404.github.io/primaWS2021/projects/ForestRun/index.html"> Lets run! </a>
+Play it on Github-Pages: <a href="https://lenhu404.github.io/primaWS2021/projects/ForestRun/index.html" target="_blank"> Lets run! </a>
 
-Link to the code: <a href="https://github.com/LenHu404/primaWS2021/tree/main/projects/ForestRun/Script/Source"> Lets see! </a>
+Link to the code: <a href="https://github.com/LenHu404/primaWS2021/tree/main/projects/ForestRun/Script/Source" target="_blank"> Lets see! </a>
 
-Link to old design document: <a href="https://1drv.ms/w/s!Apkox7XXqmWhhNJ-6gFDYS_fZ34s_A?e=nuOxXg"> here </a> 
+Link to old design document: <a href="https://1drv.ms/w/s!Apkox7XXqmWhhNJ-6gFDYS_fZ34s_A?e=nuOxXg" target="_blank"> here </a> 
 
 ### Controlls
 
@@ -59,9 +59,9 @@ You can either just play the Game online on Github-pages or download the reposit
 |  7 | Event-System      | the Event-System is used for the collision between runner and Obstacles. |
 |  8 | External Data     | The Game laods a json-File which holds the speed at the start of the game and and a highscore for you to beat.  |
 |  9 | Light             | There are two sources of light in the Scene. One ambient and one Directional. This way you can see the forms of the 3D-Objects. |
-|  A | Physics           | The Physics are used for the collision handling.               |
-|  B | Net               | --                                                                      |
-|  C | State Machines    | The ghost uses a statemachine to handle its behaviour.         |
-|  D | Animation         | Animate using the animation system of FudgeCore (1) and/or Sprites (1) as defined in FudgeAid                           |
+|  A | Physics           | The Physics are used for the collision handling.                 |
+|  B | Net               | --                                                               |
+|  C | State Machines    | The ghost uses a statemachine to handle its behaviour.           |
+|  D | Animation         | The Face of the ghost is using a sprite for the animation.       |
 
 

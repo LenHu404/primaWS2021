@@ -1,5 +1,6 @@
 namespace Script {
   import ƒ = FudgeCore;
+  import ƒAid = FudgeAid;
   ƒ.Debug.info("Main Program Template running!");
 
   enum MoveState {
@@ -12,9 +13,14 @@ namespace Script {
   //document.addEventListener("interactiveViewportStarted", <EventListener>start);
 
   window.addEventListener("load", start);
+  
+  const clrWhite: ƒ.Color = ƒ.Color.CSS("white");
+  let animations: ƒAid.SpriteSheetAnimations;
+  let spriteNode: ƒAid.NodeSprite;
 
   let graph: ƒ.Graph;
   let runner: ƒ.Node;
+  let ghost: ƒ.Node;
   let floor1: ƒ.Node;
   let floor2: ƒ.Node;
   let sub1: ƒ.Node;
@@ -30,9 +36,9 @@ namespace Script {
   let lastObstacleSpawnDistance: number = 0;
   let lastObstacleSpawn: number = 0;
   let speed: number = 4;
+  let startSpeed: number = 4;
   let startPoint: number = 30;
   let body: ƒ.Node;
-  //let head: ƒ.Node;
   let lLeg: ƒ.Node;
   let rLeg: ƒ.Node;
   let lArm: ƒ.Node;
@@ -40,7 +46,7 @@ namespace Script {
   let moving: MoveState;
   let timeStamp: number = 0;
   let bgMusic: ƒ.ComponentAudio;
-  let bgMusicPlayig: boolean;
+  let bgMusicPlayig: boolean = false;
   //let dataFile : Datafile;
 
 
@@ -60,9 +66,23 @@ namespace Script {
     // Get Data from File or localStorage
     //dataFile = new Datafile();
     //dataFile.getData();
-    if (localStorage.getItem("HScore")) {
+    /* if (localStorage.getItem("HScore")) {
       GameState.get().hScore = JSON.parse(localStorage.getItem("HScore"));
-    }
+    } */
+    getData();
+    await loadSprites();
+
+    // init spritenode
+    spriteNode = new ƒAid.NodeSprite("Sprite");
+    spriteNode.addComponent(new ƒ.ComponentTransform(new ƒ.Matrix4x4()));
+    spriteNode.setAnimation(<ƒAid.SpriteSheetAnimation>animations["bounce"]);
+    spriteNode.setFrameDirection(1);
+    spriteNode.mtxLocal.translateY(-0.5);
+    spriteNode.mtxLocal.rotateY(180);
+    spriteNode.mtxLocal.translateZ(1);
+    spriteNode.framerate = 8;
+
+    ghost.addChild(spriteNode);
 
     moving = MoveState.forward;
     //instaniateObstacles();
@@ -84,11 +104,11 @@ namespace Script {
     if (GameState.get().gameRunning) {
       document.querySelector("#info").setAttribute("hidden", "true");
       //instaniateObstacles();
-      matFloor1.mtxPivot.translateX(0.075 * deltaTime * speed);
-      matFloor2.mtxPivot.translateX(0.075 * deltaTime * speed);
+      matFloor1.mtxPivot.translateX(0.05 * deltaTime * speed);
+      matFloor2.mtxPivot.translateX(0.05 * deltaTime * speed);
       matSub1.mtxPivot.translateX(0.025 * deltaTime * speed);
       matSub2.mtxPivot.translateX(-0.025 * deltaTime * speed);
-      band.mtxLocal.translateZ(-1.5 * deltaTime * speed);
+      band.mtxLocal.translateZ(-1 * deltaTime * speed);
       metercount += 1.5 * deltaTime * speed;
       timeStamp += 1 * deltaTime;
       //console.log("timestamp", metercount);
@@ -108,7 +128,11 @@ namespace Script {
     if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.M])) {
       bgMusicPlayig = !bgMusicPlayig;
     }
-    bgMusic.play(bgMusicPlayig);
+    if (bgMusicPlayig) {
+      bgMusic.volume = 0.2;
+    } else {
+      bgMusic.volume = 0;
+    }
     //console.log("metercount", metercount);
 
     //matFloor.mtxPivot.translation.x += 0.01* deltaTime;
@@ -132,7 +156,8 @@ namespace Script {
       metercount = 0;
       lastObstacleSpawnDistance = 0;
       lastObstacleSpawn = 0;
-      speed = 4;
+      speed = startSpeed;
+      ghost.getComponent(StateMachine).transit(JOB.RESPAWN);
     }
 
 
@@ -144,24 +169,31 @@ namespace Script {
       let obstacle: ƒ.Node = _event.cmpRigidbody.node;
       console.log(obstacle.name);
 
-      if (obstacle.getParent().name != "Hindernisse") {
-        obstacle = obstacle.getParent();
-      }
-      for (const node of obstacle.getIterator()) {
-        if (node.getComponent(ƒ.ComponentRigidbody)) {
-          node.removeComponent(node.getComponent(ƒ.ComponentRigidbody));
-        }
-        node.activate(false);
-      }
-      obstacles.removeChild(obstacle);
-
-
-      if (obstacle.name == "Coin") {
-        console
+      if (obstacle.name == "ghost") {
+        console.log("buh!")
         GameState.get().score += 10000;
         let cmpAudio: ƒ.ComponentAudio = getcmpAudio("sndGoldcoin");
         cmpAudio.play(true);
-      } else {
+
+      } else if (obstacle.getParent().name != "Hindernisse") {
+        obstacle = obstacle.getParent();
+      }
+      if (obstacle.name != "ghost") {
+        for (const node of obstacle.getIterator()) {
+          if (node.getComponent(ƒ.ComponentRigidbody)) {
+            node.removeComponent(node.getComponent(ƒ.ComponentRigidbody));
+          }
+          node.activate(false);
+        }
+        obstacles.removeChild(obstacle);
+      }
+
+
+      if (obstacle.name == "Coin") {
+        GameState.get().score += 10000;
+        let cmpAudio: ƒ.ComponentAudio = getcmpAudio("sndGoldcoin");
+        cmpAudio.play(true);
+      } else if (obstacle.name != "ghost"){
         let cmpAudio: ƒ.ComponentAudio = getcmpAudio("sndHit");
         cmpAudio.play(true);
         reset();
@@ -169,12 +201,7 @@ namespace Script {
           document.getElementById("info").innerHTML = "Game over! <br> Try again and press Enter to start the Game.";
           GameState.get().gameRunning = false;
           console.log("Score: " + GameState.get().score)
-          //dataFile.save();
-          if (GameState.get().score > GameState.get().hScore) {
-            GameState.get().hScore = GameState.get().score;
-            localStorage.setItem("HScore", JSON.stringify(GameState.get().score));
-
-          }
+          saveData();
         }
       }
 
@@ -229,7 +256,7 @@ namespace Script {
         //console.log("graph", obstacles);
       }
     });
-    runner.mtxLocal.translation = new ƒ.Vector3(0, 0.75, -3);
+    runner.mtxLocal.translation = new ƒ.Vector3(0, 0.75, -5);
 
 
   }
@@ -291,6 +318,8 @@ namespace Script {
     matSub2 = sub2.getComponent(ƒ.ComponentMaterial);
     band = graph.getChildrenByName("Laufband")[0].getChildrenByName("Band")[0];
     runner = graph.getChildrenByName("runner")[0];
+    obstacles = graph.getChildrenByName("Laufband")[0].getChildrenByName("Band")[0].getChildrenByName("Hindernisse")[0];
+    ghost = band.getChildrenByName("ghost")[0];
 
     //console.log("name ", this.node);
     body = runner.getChildrenByName("body")[0];
@@ -302,7 +331,7 @@ namespace Script {
     lArm = body.getChildrenByName("lArm")[0];
     rArm = body.getChildrenByName("rArm")[0];
 
-    obstacles = graph.getChildrenByName("Laufband")[0].getChildrenByName("Band")[0].getChildrenByName("Hindernisse")[0];
+
   }
 
   async function instaniateObstacles(): Promise<void> {
@@ -442,5 +471,59 @@ namespace Script {
       }
     } */
     return graph.getComponents(ƒ.ComponentAudio)[1];
+  }
+
+  async function getData() {
+    let data = await fetchData();
+
+    let fetchedHighscore: number = data.data.startHighscore;
+    startSpeed = data.data.startSpeed;
+    GameState.get().hScore = fetchedHighscore;
+  }
+
+  async function fetchData() {
+    try {
+      const response = await fetch("Assets/data.json");
+      const responseObj = await response.json();
+      return responseObj;
+    } catch (error) {
+      return error;
+    }
+  }
+
+  function saveData() {
+    if (GameState.get().score > GameState.get().hScore) {
+      GameState.get().hScore = GameState.get().score;
+      localStorage.setItem("HScore", JSON.stringify(GameState.get().score));
+
+    }
+    /* let data = {
+      highscore: GameState.get().hScore
+    }; */
+
+    /* fetch("Assets/data.json", {
+      method: 'post',
+      body: JSON.stringify(data)
+    }).then(data => {
+      // data is anything returned by your API/backend code
+    }); */
+  }
+
+  async function loadSprites(): Promise<void> {
+    let imgSpriteSheet: ƒ.TextureImage = new ƒ.TextureImage();
+    await imgSpriteSheet.load("Texture/ghostface.png");
+
+    let spriteSheet: ƒ.CoatTextured = new ƒ.CoatTextured(clrWhite, imgSpriteSheet);
+    generateSprites(spriteSheet);
+  }
+
+  
+  function generateSprites(_spritesheet: ƒ.CoatTextured): void {
+    animations = {};
+    //this.animations = {};
+    let name: string = "bounce";
+    let sprite: ƒAid.SpriteSheetAnimation = new ƒAid.SpriteSheetAnimation(name, _spritesheet);
+    sprite.generateByGrid(ƒ.Rectangle.GET(1, 0, 17, 60), 8, 22, ƒ.ORIGIN2D.BOTTOMCENTER, ƒ.Vector2.X(20));
+    animations[name] = sprite;
   }
 }

@@ -20,14 +20,6 @@ declare namespace Script {
     }
 }
 declare namespace Script {
-    class Datafile {
-        hsore: number;
-        constructor();
-        save(): void;
-        getData(): void;
-    }
-}
-declare namespace Script {
     import ƒ = FudgeCore;
     class GameState extends ƒ.Mutable {
         private static controller;
@@ -83,4 +75,38 @@ declare namespace Script {
     export {};
 }
 declare namespace Script {
+}
+declare namespace Script {
+    import ƒAid = FudgeAid;
+    enum JOB {
+        IDLE = 0,
+        ESCAPE = 1,
+        DIE = 2,
+        RESPAWN = 3
+    }
+    class StateMachine extends ƒAid.ComponentStateMachine<JOB> {
+        static readonly iSubclass: number;
+        private static instructions;
+        speedIdle: number;
+        speedEscape: number;
+        torqueIdle: number;
+        private timeStamp;
+        private cmpBody;
+        private cmpMaterial;
+        private deltaTime;
+        private cmpTransform;
+        constructor();
+        static get(): ƒAid.StateMachineInstructions<JOB>;
+        private static transitDefault;
+        private static actDefault;
+        private static actIdle;
+        private static actEscape;
+        private static actDie;
+        private static transitDie;
+        private static actRespawn;
+        private hndEvent;
+        private update;
+        private static sin;
+        private static sinHorizontal;
+    }
 }

@@ -84,37 +84,49 @@ var Script;
     })();
     Script.CustomComponentScript = CustomComponentScript;
 })(Script || (Script = {}));
-var Script;
-(function (Script) {
-    var ƒ = FudgeCore;
-    ƒ.Project.registerScriptNamespace(Script); // Register the namespace to FUDGE for serialization
-    class Datafile {
+/* namespace Script {
+    import ƒ = FudgeCore;
+    import fs from 'fs';
+    ƒ.Project.registerScriptNamespace(Script);  // Register the namespace to FUDGE for serialization
+
+    export class Datafile {
+
+        public hsore: number;
         constructor() {
             this.getData();
+
         }
-        save() {
+
+        public save(): void {
             let data = {
-                "hscore": Script.GameState.get().hScore
-            };
-            let jdata = JSON.stringify(data);
-            fs_1.default.writeFile('data.json', jdata, (err) => {
+                "hscore": GameState.get().hScore
+            }
+
+            let jdata: string = JSON.stringify(data);
+
+
+            fs.writeFile('data.json', jdata, (err: Error) => {
                 if (err) {
                     throw err;
                 }
                 console.log("JSON data is saved.");
             });
         }
-        getData() {
-            fs_1.default.readFile('data.json', 'utf-8', (err, data) => {
+
+        public getData(): void {
+            fs.readFile('data.json', 'utf-8', (err: Error, data: string) => {
                 if (err) {
                     throw err;
                 }
-                Script.GameState.get().hScore = JSON.parse(data.toString());
+
+                GameState.get().hScore = JSON.parse(data.toString());
+
             });
+
+
         }
     }
-    Script.Datafile = Datafile;
-})(Script || (Script = {}));
+} */ 
 var Script;
 (function (Script) {
     var ƒ = FudgeCore;
@@ -350,6 +362,7 @@ var Script;
 var Script;
 (function (Script) {
     var ƒ = FudgeCore;
+    var ƒAid = FudgeAid;
     ƒ.Debug.info("Main Program Template running!");
     let MoveState;
     (function (MoveState) {
@@ -360,8 +373,12 @@ var Script;
     let viewport;
     //document.addEventListener("interactiveViewportStarted", <EventListener>start);
     window.addEventListener("load", start);
+    const clrWhite = ƒ.Color.CSS("white");
+    let animations;
+    let spriteNode;
     let graph;
     let runner;
+    let ghost;
     let floor1;
     let floor2;
     let sub1;
@@ -377,9 +394,9 @@ var Script;
     let lastObstacleSpawnDistance = 0;
     let lastObstacleSpawn = 0;
     let speed = 4;
+    let startSpeed = 4;
     let startPoint = 30;
     let body;
-    //let head: ƒ.Node;
     let lLeg;
     let rLeg;
     let lArm;
@@ -387,7 +404,7 @@ var Script;
     let moving;
     let timeStamp = 0;
     let bgMusic;
-    let bgMusicPlayig;
+    let bgMusicPlayig = false;
     //let dataFile : Datafile;
     async function start(_event) {
         await ƒ.Project.loadResourcesFromHTML();
@@ -399,9 +416,21 @@ var Script;
         // Get Data from File or localStorage
         //dataFile = new Datafile();
         //dataFile.getData();
-        if (localStorage.getItem("HScore")) {
-            Script.GameState.get().hScore = JSON.parse(localStorage.getItem("HScore"));
-        }
+        /* if (localStorage.getItem("HScore")) {
+          GameState.get().hScore = JSON.parse(localStorage.getItem("HScore"));
+        } */
+        getData();
+        await loadSprites();
+        // init spritenode
+        spriteNode = new ƒAid.NodeSprite("Sprite");
+        spriteNode.addComponent(new ƒ.ComponentTransform(new ƒ.Matrix4x4()));
+        spriteNode.setAnimation(animations["bounce"]);
+        spriteNode.setFrameDirection(1);
+        spriteNode.mtxLocal.translateY(-0.5);
+        spriteNode.mtxLocal.rotateY(180);
+        spriteNode.mtxLocal.translateZ(1);
+        spriteNode.framerate = 8;
+        ghost.addChild(spriteNode);
         moving = MoveState.forward;
         //instaniateObstacles();
         viewport.physicsDebugMode = ƒ.PHYSICS_DEBUGMODE.COLLIDERS;
@@ -419,11 +448,11 @@ var Script;
         if (Script.GameState.get().gameRunning) {
             document.querySelector("#info").setAttribute("hidden", "true");
             //instaniateObstacles();
-            matFloor1.mtxPivot.translateX(0.075 * deltaTime * speed);
-            matFloor2.mtxPivot.translateX(0.075 * deltaTime * speed);
+            matFloor1.mtxPivot.translateX(0.05 * deltaTime * speed);
+            matFloor2.mtxPivot.translateX(0.05 * deltaTime * speed);
             matSub1.mtxPivot.translateX(0.025 * deltaTime * speed);
             matSub2.mtxPivot.translateX(-0.025 * deltaTime * speed);
-            band.mtxLocal.translateZ(-1.5 * deltaTime * speed);
+            band.mtxLocal.translateZ(-1 * deltaTime * speed);
             metercount += 1.5 * deltaTime * speed;
             timeStamp += 1 * deltaTime;
             //console.log("timestamp", metercount);
@@ -442,7 +471,12 @@ var Script;
         if (ƒ.Keyboard.isPressedOne([ƒ.KEYBOARD_CODE.M])) {
             bgMusicPlayig = !bgMusicPlayig;
         }
-        bgMusic.play(bgMusicPlayig);
+        if (bgMusicPlayig) {
+            bgMusic.volume = 0.2;
+        }
+        else {
+            bgMusic.volume = 0;
+        }
         //console.log("metercount", metercount);
         //matFloor.mtxPivot.translation.x += 0.01* deltaTime;
         // matFloor.mtxPivot.rotation +=1
@@ -462,7 +496,8 @@ var Script;
             metercount = 0;
             lastObstacleSpawnDistance = 0;
             lastObstacleSpawn = 0;
-            speed = 4;
+            speed = startSpeed;
+            ghost.getComponent(Script.StateMachine).transit(Script.JOB.RESPAWN);
         }
     }
     function hndCollision(_event) {
@@ -470,23 +505,30 @@ var Script;
         if (Script.GameState.get().gameRunning) {
             let obstacle = _event.cmpRigidbody.node;
             console.log(obstacle.name);
-            if (obstacle.getParent().name != "Hindernisse") {
-                obstacle = obstacle.getParent();
-            }
-            for (const node of obstacle.getIterator()) {
-                if (node.getComponent(ƒ.ComponentRigidbody)) {
-                    node.removeComponent(node.getComponent(ƒ.ComponentRigidbody));
-                }
-                node.activate(false);
-            }
-            obstacles.removeChild(obstacle);
-            if (obstacle.name == "Coin") {
-                console;
+            if (obstacle.name == "ghost") {
+                console.log("buh!");
                 Script.GameState.get().score += 10000;
                 let cmpAudio = getcmpAudio("sndGoldcoin");
                 cmpAudio.play(true);
             }
-            else {
+            else if (obstacle.getParent().name != "Hindernisse") {
+                obstacle = obstacle.getParent();
+            }
+            if (obstacle.name != "ghost") {
+                for (const node of obstacle.getIterator()) {
+                    if (node.getComponent(ƒ.ComponentRigidbody)) {
+                        node.removeComponent(node.getComponent(ƒ.ComponentRigidbody));
+                    }
+                    node.activate(false);
+                }
+                obstacles.removeChild(obstacle);
+            }
+            if (obstacle.name == "Coin") {
+                Script.GameState.get().score += 10000;
+                let cmpAudio = getcmpAudio("sndGoldcoin");
+                cmpAudio.play(true);
+            }
+            else if (obstacle.name != "ghost") {
                 let cmpAudio = getcmpAudio("sndHit");
                 cmpAudio.play(true);
                 reset();
@@ -494,11 +536,7 @@ var Script;
                     document.getElementById("info").innerHTML = "Game over! <br> Try again and press Enter to start the Game.";
                     Script.GameState.get().gameRunning = false;
                     console.log("Score: " + Script.GameState.get().score);
-                    //dataFile.save();
-                    if (Script.GameState.get().score > Script.GameState.get().hScore) {
-                        Script.GameState.get().hScore = Script.GameState.get().score;
-                        localStorage.setItem("HScore", JSON.stringify(Script.GameState.get().score));
-                    }
+                    saveData();
                 }
             }
             //console.log( GameState.get().health);
@@ -544,7 +582,7 @@ var Script;
                 //console.log("graph", obstacles);
             }
         });
-        runner.mtxLocal.translation = new ƒ.Vector3(0, 0.75, -3);
+        runner.mtxLocal.translation = new ƒ.Vector3(0, 0.75, -5);
     }
     function spawingObstacles() {
         if (lastObstacleSpawnDistance >= obstacleDistance) {
@@ -600,6 +638,8 @@ var Script;
         matSub2 = sub2.getComponent(ƒ.ComponentMaterial);
         band = graph.getChildrenByName("Laufband")[0].getChildrenByName("Band")[0];
         runner = graph.getChildrenByName("runner")[0];
+        obstacles = graph.getChildrenByName("Laufband")[0].getChildrenByName("Band")[0].getChildrenByName("Hindernisse")[0];
+        ghost = band.getChildrenByName("ghost")[0];
         //console.log("name ", this.node);
         body = runner.getChildrenByName("body")[0];
         //console.log("name ", this.body);
@@ -608,7 +648,6 @@ var Script;
         rLeg = body.getChildrenByName("rLeg")[0];
         lArm = body.getChildrenByName("lArm")[0];
         rArm = body.getChildrenByName("rArm")[0];
-        obstacles = graph.getChildrenByName("Laufband")[0].getChildrenByName("Band")[0].getChildrenByName("Hindernisse")[0];
     }
     async function instaniateObstacles() {
         let treeBlueprint = FudgeCore.Project.resources["Graph|2022-01-11T13:55:44.114Z|12001"];
@@ -699,5 +738,179 @@ var Script;
         } */
         return graph.getComponents(ƒ.ComponentAudio)[1];
     }
+    async function getData() {
+        let data = await fetchData();
+        let fetchedHighscore = data.data.startHighscore;
+        startSpeed = data.data.startSpeed;
+        Script.GameState.get().hScore = fetchedHighscore;
+    }
+    async function fetchData() {
+        try {
+            const response = await fetch("Assets/data.json");
+            const responseObj = await response.json();
+            return responseObj;
+        }
+        catch (error) {
+            return error;
+        }
+    }
+    function saveData() {
+        if (Script.GameState.get().score > Script.GameState.get().hScore) {
+            Script.GameState.get().hScore = Script.GameState.get().score;
+            localStorage.setItem("HScore", JSON.stringify(Script.GameState.get().score));
+        }
+        /* let data = {
+          highscore: GameState.get().hScore
+        }; */
+        /* fetch("Assets/data.json", {
+          method: 'post',
+          body: JSON.stringify(data)
+        }).then(data => {
+          // data is anything returned by your API/backend code
+        }); */
+    }
+    async function loadSprites() {
+        let imgSpriteSheet = new ƒ.TextureImage();
+        await imgSpriteSheet.load("Texture/ghostface.png");
+        let spriteSheet = new ƒ.CoatTextured(clrWhite, imgSpriteSheet);
+        generateSprites(spriteSheet);
+    }
+    function generateSprites(_spritesheet) {
+        animations = {};
+        //this.animations = {};
+        let name = "bounce";
+        let sprite = new ƒAid.SpriteSheetAnimation(name, _spritesheet);
+        sprite.generateByGrid(ƒ.Rectangle.GET(1, 0, 17, 60), 8, 22, ƒ.ORIGIN2D.BOTTOMCENTER, ƒ.Vector2.X(20));
+        animations[name] = sprite;
+    }
+})(Script || (Script = {}));
+var Script;
+(function (Script) {
+    var ƒ = FudgeCore;
+    var ƒAid = FudgeAid;
+    ƒ.Project.registerScriptNamespace(Script); // Register the namespace to FUDGE for serialization
+    let JOB;
+    (function (JOB) {
+        JOB[JOB["IDLE"] = 0] = "IDLE";
+        JOB[JOB["ESCAPE"] = 1] = "ESCAPE";
+        JOB[JOB["DIE"] = 2] = "DIE";
+        JOB[JOB["RESPAWN"] = 3] = "RESPAWN";
+    })(JOB = Script.JOB || (Script.JOB = {}));
+    let StateMachine = /** @class */ (() => {
+        class StateMachine extends ƒAid.ComponentStateMachine {
+            constructor() {
+                super();
+                this.speedIdle = 20;
+                this.speedEscape = 15;
+                this.torqueIdle = 5;
+                this.timeStamp = 0;
+                this.deltaTime = 0;
+                // Activate the functions of this component as response to events
+                this.hndEvent = (_event) => {
+                    switch (_event.type) {
+                        case "componentAdd" /* COMPONENT_ADD */:
+                            ƒ.Loop.addEventListener("loopFrame" /* LOOP_FRAME */, this.update);
+                            this.transit(JOB.IDLE);
+                            break;
+                        case "componentRemove" /* COMPONENT_REMOVE */:
+                            this.removeEventListener("componentAdd" /* COMPONENT_ADD */, this.hndEvent);
+                            this.removeEventListener("componentRemove" /* COMPONENT_REMOVE */, this.hndEvent);
+                            ƒ.Loop.removeEventListener("loopFrame" /* LOOP_FRAME */, this.update);
+                            break;
+                        case "nodeDeserialized" /* NODE_DESERIALIZED */:
+                            this.cmpBody = this.node.getComponent(ƒ.ComponentRigidbody);
+                            this.cmpMaterial = this.node.getComponent(ƒ.ComponentMaterial);
+                            this.cmpTransform = this.node.getComponent(ƒ.ComponentTransform);
+                            this.cmpBody.addEventListener("TriggerEnteredCollision" /* TRIGGER_ENTER */, (_event) => {
+                                if (_event.cmpRigidbody.node.name == "runner")
+                                    this.transit(JOB.DIE);
+                            });
+                            let trigger = this.node.getChildren()[0].getComponent(ƒ.ComponentRigidbody);
+                            trigger.addEventListener("TriggerEnteredCollision" /* TRIGGER_ENTER */, (_event) => {
+                                console.log("TriggerEnter", _event.cmpRigidbody.node.name);
+                                if (_event.cmpRigidbody.node.name == "runner" && this.stateCurrent != JOB.DIE)
+                                    this.transit(JOB.ESCAPE);
+                            });
+                            trigger.addEventListener("TriggerLeftCollision" /* TRIGGER_EXIT */, (_event) => {
+                                if (this.stateCurrent == JOB.ESCAPE)
+                                    this.transit(JOB.IDLE);
+                            });
+                            break;
+                    }
+                };
+                this.update = (_event) => {
+                    this.act();
+                    this.deltaTime = this.deltaTime = ƒ.Loop.timeFrameReal / 1000;
+                };
+                this.instructions = StateMachine.instructions; // setup instructions with the static set
+                // Don't start when running in editor
+                if (ƒ.Project.mode == ƒ.MODE.EDITOR)
+                    return;
+                // Listen to this component being added to or removed from a node
+                this.addEventListener("componentAdd" /* COMPONENT_ADD */, this.hndEvent);
+                this.addEventListener("componentRemove" /* COMPONENT_REMOVE */, this.hndEvent);
+                this.addEventListener("nodeDeserialized" /* NODE_DESERIALIZED */, this.hndEvent);
+            }
+            static get() {
+                let setup = new ƒAid.StateMachineInstructions();
+                setup.transitDefault = StateMachine.transitDefault;
+                setup.actDefault = StateMachine.actDefault;
+                setup.setAction(JOB.IDLE, this.actIdle);
+                setup.setAction(JOB.ESCAPE, this.actEscape);
+                setup.setAction(JOB.DIE, this.actDie);
+                setup.setAction(JOB.RESPAWN, this.actRespawn);
+                setup.setTransition(JOB.ESCAPE, JOB.DIE, this.transitDie);
+                return setup;
+            }
+            static transitDefault(_machine) {
+                console.log("Transit to", _machine.stateNext);
+            }
+            static async actDefault(_machine) {
+                console.log(JOB[_machine.stateCurrent]);
+                //console.log("position", _machine.node.mtxLocal.translation.toString());
+                let currPos = _machine.node.mtxLocal.translation;
+                if (Script.GameState.get().gameRunning && _machine.stateCurrent == JOB.IDLE) {
+                    _machine.timeStamp += 1 * _machine.deltaTime;
+                    _machine.cmpTransform.mtxLocal.translation = new ƒ.Vector3(StateMachine.sinHorizontal(_machine.timeStamp), StateMachine.sin(_machine.timeStamp) + 0.5, currPos.z);
+                }
+                if (Script.GameState.get().gameRunning && _machine.stateCurrent == JOB.IDLE) {
+                    _machine.cmpTransform.mtxLocal.translateZ(_machine.speedIdle * _machine.deltaTime);
+                }
+                if (Script.GameState.get().gameRunning && _machine.stateCurrent == JOB.ESCAPE) {
+                    _machine.cmpTransform.mtxLocal.translation = new ƒ.Vector3(currPos.x, currPos.y, currPos.z + _machine.speedEscape * _machine.deltaTime);
+                }
+            }
+            static async actIdle(_machine) {
+                /* if (GameState.get().gameRunning) {
+                  _machine.node.mtxLocal.translateZ(_machine.speedIdle * _machine.deltaTime);
+                } */
+                StateMachine.actDefault(_machine);
+            }
+            static async actEscape(_machine) {
+                //_machine.node.mtxLocal.translateZ(_machine.speedEscape * _machine.deltaTime);
+                StateMachine.actDefault(_machine);
+            }
+            static async actDie(_machine) {
+                _machine.transit(JOB.IDLE);
+            }
+            static transitDie(_machine) {
+                _machine.transit(JOB.RESPAWN);
+            }
+            static actRespawn(_machine) {
+                _machine.cmpTransform.mtxLocal.translation = new ƒ.Vector3(0, 0, 5);
+                _machine.transit(JOB.IDLE);
+            }
+        }
+        StateMachine.iSubclass = ƒ.Component.registerSubclass(StateMachine);
+        StateMachine.instructions = StateMachine.get();
+        StateMachine.sin = (x) => {
+            return Math.sin(Math.PI * x) * 0.3;
+        };
+        StateMachine.sinHorizontal = (x) => {
+            return Math.sin(1 * x) * 2;
+        };
+        return StateMachine;
+    })();
+    Script.StateMachine = StateMachine;
 })(Script || (Script = {}));
 //# sourceMappingURL=Script.js.map
