@@ -507,7 +507,6 @@ var Script;
             console.log(obstacle.name);
             if (obstacle.name == "ghost") {
                 console.log("buh!");
-                Script.GameState.get().score += 10000;
             }
             else if (obstacle.getParent().name != "Hindernisse") {
                 obstacle = obstacle.getParent();
@@ -800,7 +799,7 @@ var Script;
         class StateMachine extends ƒAid.ComponentStateMachine {
             constructor() {
                 super();
-                this.speedIdle = 20;
+                this.speedIdle = 10;
                 this.speedEscape = 15;
                 this.torqueIdle = 5;
                 this.timeStamp = 0;
@@ -869,25 +868,17 @@ var Script;
                 console.log(JOB[_machine.stateCurrent]);
                 //console.log("position", _machine.node.mtxLocal.translation.toString());
                 let currPos = _machine.node.mtxLocal.translation;
-                if (Script.GameState.get().gameRunning && _machine.stateCurrent == JOB.IDLE) {
-                    _machine.timeStamp += 1 * _machine.deltaTime;
-                    _machine.cmpTransform.mtxLocal.translation = new ƒ.Vector3(StateMachine.sinHorizontal(_machine.timeStamp), StateMachine.sin(_machine.timeStamp) + 0.5, currPos.z);
-                }
-                if (Script.GameState.get().gameRunning && _machine.stateCurrent == JOB.IDLE) {
-                    _machine.cmpTransform.mtxLocal.translateZ(_machine.speedIdle * _machine.deltaTime);
-                }
-                if (Script.GameState.get().gameRunning && _machine.stateCurrent == JOB.ESCAPE) {
-                    _machine.cmpTransform.mtxLocal.translation = new ƒ.Vector3(currPos.x, currPos.y, currPos.z + _machine.speedEscape * _machine.deltaTime);
-                }
+                _machine.timeStamp += 1 * _machine.deltaTime;
+                _machine.cmpTransform.mtxLocal.translation = new ƒ.Vector3(StateMachine.sinHorizontal(_machine.timeStamp), StateMachine.sin(_machine.timeStamp) + 0.5, currPos.z);
             }
             static async actIdle(_machine) {
-                /* if (GameState.get().gameRunning) {
-                  _machine.node.mtxLocal.translateZ(_machine.speedIdle * _machine.deltaTime);
-                } */
+                if (Script.GameState.get().gameRunning) {
+                    _machine.cmpTransform.mtxLocal.translateZ(_machine.speedIdle * _machine.deltaTime);
+                }
                 StateMachine.actDefault(_machine);
             }
             static async actEscape(_machine) {
-                //_machine.node.mtxLocal.translateZ(_machine.speedEscape * _machine.deltaTime);
+                _machine.cmpTransform.mtxLocal.translateZ(_machine.speedEscape * _machine.deltaTime);
                 StateMachine.actDefault(_machine);
             }
             static async actDie(_machine) {

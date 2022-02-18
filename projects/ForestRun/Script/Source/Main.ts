@@ -168,8 +168,7 @@ namespace Script {
       console.log(obstacle.name);
 
       if (obstacle.name == "ghost") {
-        console.log("buh!")
-        GameState.get().score += 10000;
+        console.log("buh!");
 
       } else if (obstacle.getParent().name != "Hindernisse") {
         obstacle = obstacle.getParent();

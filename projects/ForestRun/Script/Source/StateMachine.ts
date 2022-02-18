@@ -10,7 +10,7 @@ namespace Script {
   export class StateMachine extends ƒAid.ComponentStateMachine<JOB> {
     public static readonly iSubclass: number = ƒ.Component.registerSubclass(StateMachine);
     private static instructions: ƒAid.StateMachineInstructions<JOB> = StateMachine.get();
-    public speedIdle: number = 20;
+    public speedIdle: number = 10;
     public speedEscape: number = 15;
     public torqueIdle: number = 5;
     private timeStamp: number = 0;
@@ -53,34 +53,24 @@ namespace Script {
     private static async actDefault(_machine: StateMachine): Promise<void> {
       console.log(JOB[_machine.stateCurrent]);
       //console.log("position", _machine.node.mtxLocal.translation.toString());
-      
-      
-      let currPos: ƒ.Vector3 = _machine.node.mtxLocal.translation;
-      if (GameState.get().gameRunning && _machine.stateCurrent == JOB.IDLE) {
-        _machine.timeStamp += 1 * _machine.deltaTime;
-        _machine.cmpTransform.mtxLocal.translation = new ƒ.Vector3(StateMachine.sinHorizontal(_machine.timeStamp), StateMachine.sin(_machine.timeStamp) + 0.5, currPos.z);
-      }
-      if (GameState.get().gameRunning && _machine.stateCurrent == JOB.IDLE) {
-        _machine.cmpTransform.mtxLocal.translateZ(_machine.speedIdle * _machine.deltaTime);
-        
-      }
 
-      if (GameState.get().gameRunning && _machine.stateCurrent == JOB.ESCAPE) {
-        _machine.cmpTransform.mtxLocal.translation = new ƒ.Vector3(currPos.x, currPos.y, currPos.z + _machine.speedEscape * _machine.deltaTime);
-      }
+
+      let currPos: ƒ.Vector3 = _machine.node.mtxLocal.translation;
+      _machine.timeStamp += 1 * _machine.deltaTime;
+      _machine.cmpTransform.mtxLocal.translation = new ƒ.Vector3(StateMachine.sinHorizontal(_machine.timeStamp), StateMachine.sin(_machine.timeStamp) + 0.5, currPos.z);
+
     }
 
     private static async actIdle(_machine: StateMachine): Promise<void> {
-      /* if (GameState.get().gameRunning) {
-        _machine.node.mtxLocal.translateZ(_machine.speedIdle * _machine.deltaTime);
-      } */
-
+      if (GameState.get().gameRunning) {
+        _machine.cmpTransform.mtxLocal.translateZ(_machine.speedIdle * _machine.deltaTime);
+      }
       StateMachine.actDefault(_machine);
     }
 
     private static async actEscape(_machine: StateMachine): Promise<void> {
-      //_machine.node.mtxLocal.translateZ(_machine.speedEscape * _machine.deltaTime);
-      StateMachine.actDefault(_machine);
+      _machine.cmpTransform.mtxLocal.translateZ(_machine.speedEscape * _machine.deltaTime);
+            StateMachine.actDefault(_machine);
     }
 
     private static async actDie(_machine: StateMachine): Promise<void> {

@@ -11,7 +11,7 @@ Link to old design document: <a href="https://1drv.ms/w/s!Apkox7XXqmWhhNJ-6gFDYS
 ### Controlls
 
 You can use either W,A,S,D or the arrow keys to move. Press SPACE to jump.
-Try to avoid the trees and stones. You get extra points by collecting the coins or catching the ghost.
+Try to avoid the trees and stones. You get extra points by collecting the coins.
 By pressing M you can mute the background music.
 
 
